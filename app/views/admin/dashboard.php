@@ -387,7 +387,8 @@ $today = date('d/m/Y');
                         legend: { display: false },
                         tooltip: {
                             backgroundColor: '#ffffff',
-                            bodyColor: '#64748b',
+                            titleColor: '#000000',
+                            bodyColor: '#000000',
                             borderColor: '#e2e8f0',
                             borderWidth: 1
                         }

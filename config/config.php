@@ -69,7 +69,7 @@ define('LOGS_PATH', ROOT_PATH . '/logs');
 // =============================================================================
 
 
-define('BASE_URL', 'http://localhost:81/sieu_thi/public');
+define('BASE_URL', 'http://localhost/sieu_thi/public');
 define('UPLOADS_DIR', BASE_URL . '/uploads');
 define('ASSETS_DIR', BASE_URL . '/assets');
 define('UPLOAD_PRODUCT_URL', ASSETS_DIR . '/img/products');

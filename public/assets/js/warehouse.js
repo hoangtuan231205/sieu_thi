@@ -91,7 +91,7 @@ function bindSearch(inputId, boxId, callback) {
 
     if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
-    const json = await getJSON(`${WH_BASE}/public/warehouse/search-product?q=${encodeURIComponent(q)}`);
+    const json = await getJSON(`${WH_BASE}/warehouse/search-product?q=${encodeURIComponent(q)}`);
     if (!json.success || !json.products || !json.products.length) {
       box.style.display = 'none';
       box.innerHTML = '';
@@ -226,7 +226,7 @@ async function submitAdd() {
   if (!ngay) return alert('Chọn ngày nhập');
   if (!addLines.length) return alert('Chưa có sản phẩm');
 
-  const json = await postJSON(`${WH_BASE}/public/warehouse/import-create`, {
+  const json = await postJSON(`${WH_BASE}/warehouse/import-create`, {
     csrf_token: WH_CSRF || '',
     ngay_nhap: ngay,
     ghi_chu: note,
@@ -265,13 +265,14 @@ bindSearch('wh-edit-q', 'wh-edit-suggest', p => {
 });
 
 async function loadEdit(id) {
-  const json = await getJSON(`${WH_BASE}/public/warehouse/import-detail?id=${id}`);
+  const json = await getJSON(`${WH_BASE}/warehouse/import-detail?id=${id}`);
   if (!json.success) return alert(json.message || 'Không tải được phiếu');
 
   const imp = json.import;
 
   document.getElementById('wh-edit-id').value = imp.ID_phieu_nhap;
   document.getElementById('wh-edit-code').textContent = '#' + (imp.Ma_hien_thi || '');
+  document.getElementById('wh-edit-ma').value = imp.Ma_hien_thi || '';
   document.getElementById('wh-edit-date').value = (imp.Ngay_nhap || '').slice(0, 10);
   document.getElementById('wh-edit-user').value = imp.Nguoi_tao_ten || '';
   document.getElementById('wh-edit-note').value = imp.Ghi_chu || '';
@@ -368,10 +369,8 @@ function renderEditLines() {
         <td>${x.Ten_sp}</td>
         <td>${x.Don_vi_tinh}</td>
         <td>${money(x.Gia_hien_tai || 0)}</td>
-        <td><input type="number" min="1" value="${x.So_luong}"
-            onchange="editLines[${i}].So_luong=Math.max(1,parseInt(this.value||'1',10));renderEditLines()"></td>
-        <td><input type="number" min="0" value="${x.Don_gia_nhap}"
-            onchange="editLines[${i}].Don_gia_nhap=Math.max(0,parseFloat(this.value||'0'));renderEditLines()"></td>
+        <td>${x.So_luong}</td>
+        <td>${money(x.Don_gia_nhap)}</td>
         <td class="wh-bold">${money(t)}</td>
         <td>
           <button type="button" class="wh-icon wh-edit" title="Sửa" onclick="pickEditLine(${i})">✏️</button>
@@ -396,7 +395,7 @@ async function submitEdit() {
   if (!ngay) return alert('Chọn ngày nhập');
   if (!editLines.length) return alert('Chưa có sản phẩm');
 
-  const json = await postJSON(`${WH_BASE}/public/warehouse/import-update`, {
+  const json = await postJSON(`${WH_BASE}/warehouse/import-update`, {
     csrf_token: WH_CSRF || '',
     id_phieu_nhap: id,
     ngay_nhap: ngay,
@@ -416,7 +415,7 @@ async function submitEdit() {
 function deleteImport(id) {
   if (!confirm('Bạn có chắc muốn xóa phiếu nhập này?')) return;
 
-  fetch(`${WH_BASE}/public/warehouse/import-delete`, {
+  fetch(`${WH_BASE}/warehouse/import-delete`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
