@@ -8,12 +8,12 @@
       <button class="wh-close" type="button" onclick="closeAdd()">×</button>
     </div>
 
-    <div class="wh-modal-body wh-grid-2">
+    <div class="wh-modal-body" style="display: grid; grid-template-columns: 1fr 2fr; gap: 16px;">
 
       <div class="wh-panel">
         <h3 class="wh-panel-title">Thông Tin Phiếu</h3>
 
-        <div class="wh-field">
+        <div class="wh-field" style="display:none;">
           <label>Mã phiếu</label>
           <input disabled placeholder="Tự động sinh (trigger)">
         </div>
@@ -42,7 +42,7 @@
           <div class="wh-suggest" id="wh-add-suggest"></div>
         </div>
 
-        <div class="wh-row-3">
+        <div class="wh-row-2">
           <div class="wh-field">
             <label>Mã SP</label>
             <input id="wh-add-ma" disabled>
@@ -51,9 +51,35 @@
             <label>ĐVT</label>
             <input id="wh-add-dvt" disabled>
           </div>
+        </div>
+
+        <div class="wh-row-2">
           <div class="wh-field">
-            <label>Giá hiện tại</label>
-            <input id="wh-add-gia" disabled>
+            <label>Nhà cung cấp</label>
+            <select id="wh-add-supplier">
+              <option value="">-- Chọn nhà cung cấp --</option>
+              <?php
+              $suppliers = $suppliers ?? [];
+              foreach ($suppliers as $supplier):
+                ?>
+                <option value="<?= htmlspecialchars($supplier['ID_ncc']) ?>">
+                  <?= htmlspecialchars($supplier['Ten_ncc']) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div class="wh-field">
+            <label>Danh mục</label>
+            <select id="wh-add-category">
+              <option value="">-- Chọn danh mục --</option>
+              <option value="thuc-pham">Thực phẩm</option>
+              <option value="do-uong">Đồ uống</option>
+              <option value="do-gia-dung">Đồ gia dụng</option>
+              <option value="my-pham">Mỹ phẩm</option>
+              <option value="dien-tu">Điện tử</option>
+              <option value="thoi-trang">Thời trang</option>
+              <option value="khac">Khác</option>
+            </select>
           </div>
         </div>
 
@@ -80,14 +106,18 @@
           <tr>
             <th>SẢN PHẨM</th>
             <th>ĐVT</th>
-            <th>GIÁ BÁN</th>
+            <th>NHÀ CUNG CẤP</th>
+            <th>DANH MỤC</th>
             <th>SỐ LƯỢNG</th>
             <th>GIÁ NHẬP</th>
             <th>THÀNH TIỀN</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="wh-add-lines">
-          <tr><td colspan="6" class="wh-empty">Chưa có sản phẩm</td></tr>
+          <tr>
+            <td colspan="8" class="wh-empty">Chưa có sản phẩm</td>
+          </tr>
         </tbody>
       </table>
     </div>

@@ -1,4 +1,3 @@
-
 <?php
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -8,6 +7,7 @@ class WarehouseController extends Controller
 {
     private $warehouseModel;
     private $productModel;
+    private $supplierModel;
 
     public function __construct()
     {
@@ -16,28 +16,29 @@ class WarehouseController extends Controller
         }
 
         $this->warehouseModel = $this->model('Warehouse');
-        $this->productModel   = $this->model('Product');
+        $this->productModel = $this->model('Product');
+        $this->supplierModel = $this->model('Supplier');
     }
 
-    
+
 
     public function index()
     {
-       
+
         return $this->dashboard();
     }
 
     public function dashboard()
     {
         $filters = [
-            'ma_phieu'  => trim(get('ma_phieu', '')),
+            'ma_phieu' => trim(get('ma_phieu', '')),
             'nguoi_tao' => trim(get('nguoi_tao', '')),
             'ngay_nhap' => trim(get('ngay_nhap', '')),
-            'page'      => max(1, (int)get('page', 1)),
+            'page' => max(1, (int) get('page', 1)),
         ];
 
         $perPage = 10;
-        $total   = $this->warehouseModel->countImports3Fields($filters);
+        $total = $this->warehouseModel->countImports3Fields($filters);
         $pagination = $this->paginate($total, $perPage, $filters['page']);
 
         $imports = $this->warehouseModel->getImports3Fields(
@@ -46,12 +47,16 @@ class WarehouseController extends Controller
             $pagination['offset']
         );
 
+        // Load danh sách nhà cung cấp cho dropdown
+        $suppliers = $this->supplierModel->getForDropdown();
+
         $data = [
             'page_title' => 'Quản Lý Phiếu Nhập',
-            'filters'    => $filters,
-            'imports'    => $imports,
+            'filters' => $filters,
+            'imports' => $imports,
             'pagination' => $pagination,
-            'total'      => $total,
+            'total' => $total,
+            'suppliers' => $suppliers,
             'csrf_token' => class_exists('Session') ? Session::getCsrfToken() : ''
         ];
 
@@ -64,7 +69,8 @@ class WarehouseController extends Controller
      */
     public function searchProduct()
     {
-        if (!$this->isAjax()) $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        if (!$this->isAjax())
+            $this->json(['success' => false, 'message' => 'Invalid request'], 400);
 
         $q = trim(get('q', ''));
         if (mb_strlen($q) < 2) {
@@ -78,11 +84,11 @@ class WarehouseController extends Controller
             $out = [];
             foreach ($products as $p) {
                 $out[] = [
-                    'id'   => (int)($p['ID_sp'] ?? $p['id'] ?? 0),
-                    'ma'   => (string)($p['Ma_hien_thi'] ?? $p['ma'] ?? ''),
-                    'ten'  => (string)($p['Ten'] ?? $p['ten'] ?? ''),
-                    'dvt'  => (string)($p['Don_vi_tinh'] ?? $p['dvt'] ?? 'SP'),
-                    'gia'  => (float)($p['Gia_tien'] ?? $p['gia'] ?? 0),
+                    'id' => (int) ($p['ID_sp'] ?? $p['id'] ?? 0),
+                    'ma' => (string) ($p['Ma_hien_thi'] ?? $p['ma'] ?? ''),
+                    'ten' => (string) ($p['Ten'] ?? $p['ten'] ?? ''),
+                    'dvt' => (string) ($p['Don_vi_tinh'] ?? $p['dvt'] ?? 'SP'),
+                    'gia' => (float) ($p['Gia_tien'] ?? $p['gia'] ?? 0),
                 ];
             }
             $this->json(['success' => true, 'products' => $out]);
@@ -99,20 +105,23 @@ class WarehouseController extends Controller
      */
     public function importDetail()
     {
-        if (!$this->isAjax()) $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        if (!$this->isAjax())
+            $this->json(['success' => false, 'message' => 'Invalid request'], 400);
 
-        $id = (int)get('id', 0);
-        if ($id <= 0) $this->json(['success' => false, 'message' => 'ID không hợp lệ'], 422);
+        $id = (int) get('id', 0);
+        if ($id <= 0)
+            $this->json(['success' => false, 'message' => 'ID không hợp lệ'], 422);
 
         $import = $this->warehouseModel->getImportById($id);
-        if (!$import) $this->json(['success' => false, 'message' => 'Không tìm thấy phiếu nhập'], 404);
+        if (!$import)
+            $this->json(['success' => false, 'message' => 'Không tìm thấy phiếu nhập'], 404);
 
         $items = $this->warehouseModel->getImportDetails($id);
 
         $this->json([
             'success' => true,
-            'import'  => $import,
-            'items'   => $items
+            'import' => $import,
+            'items' => $items
         ]);
     }
 
@@ -138,14 +147,14 @@ class WarehouseController extends Controller
         }
 
         $ngayNhap = trim(post('ngay_nhap', ''));
-        $ghiChu   = trim(post('ghi_chu', ''));
+        $ghiChu = trim(post('ghi_chu', ''));
 
         $items = json_decode(post('items', '[]'), true);
         if ($ngayNhap === '' || empty($items) || !is_array($items)) {
             $this->json(['success' => false, 'message' => 'Thiếu dữ liệu ngày nhập hoặc danh sách sản phẩm'], 422);
         }
 
-        $userId = class_exists('Session') ? (int)Session::getUserId() : 1;
+        $userId = class_exists('Session') ? (int) Session::getUserId() : 1;
 
         try {
             $newId = $this->warehouseModel->createImport($userId, $ngayNhap, $ghiChu, $items);
@@ -176,9 +185,9 @@ class WarehouseController extends Controller
             }
         }
 
-        $id      = (int)post('id_phieu_nhap', 0);
+        $id = (int) post('id_phieu_nhap', 0);
         $ngayNhap = trim(post('ngay_nhap', ''));
-        $ghiChu   = trim(post('ghi_chu', ''));
+        $ghiChu = trim(post('ghi_chu', ''));
 
         $items = json_decode(post('items', '[]'), true);
 
@@ -188,7 +197,7 @@ class WarehouseController extends Controller
 
         try {
             $ok = $this->warehouseModel->updateImport($id, $ngayNhap, $ghiChu, $items);
-            $this->json(['success' => (bool)$ok]);
+            $this->json(['success' => (bool) $ok]);
         } catch (Exception $e) {
             $this->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -203,14 +212,14 @@ class WarehouseController extends Controller
             $this->json(['success' => false, 'message' => 'Invalid request'], 400);
         }
 
-        $id = (int)post('id', 0);
+        $id = (int) post('id', 0);
         if ($id <= 0) {
             $this->json(['success' => false, 'message' => 'ID không hợp lệ'], 422);
         }
 
         try {
             $ok = $this->warehouseModel->deleteImport($id);
-            $this->json(['success' => (bool)$ok]);
+            $this->json(['success' => (bool) $ok]);
         } catch (Exception $e) {
             $this->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
@@ -218,10 +227,11 @@ class WarehouseController extends Controller
 
     public function exportImport()
     {
-        while (ob_get_level() > 0) ob_end_clean();
+        while (ob_get_level() > 0)
+            ob_end_clean();
 
         $filters = [
-            'ma_phieu'  => $_GET['ma_phieu']  ?? '',
+            'ma_phieu' => $_GET['ma_phieu'] ?? '',
             'nguoi_tao' => $_GET['nguoi_tao'] ?? '',
             'ngay_nhap' => $_GET['ngay_nhap'] ?? ''
         ];

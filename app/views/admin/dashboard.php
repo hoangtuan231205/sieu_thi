@@ -1,10 +1,10 @@
-<?php 
+<?php
 /**
  * Modern Admin Dashboard
  * Design: SuperMart Template
  * Theme: #7BC043 (Lime Green) + #2D3657 (Navy)
  */
-include __DIR__ . '/layouts/header.php'; 
+include __DIR__ . '/layouts/header.php';
 
 // Safe data extraction with defaults
 $stats = $stats ?? [];
@@ -24,7 +24,8 @@ $expiringCount = count($expiring_products);
 $warningCount = $lowStockCount + $expiringCount;
 
 // Format currency
-function formatVND($amount) {
+function formatVND($amount)
+{
     return number_format($amount, 0, ',', '.') . ' ₫';
 }
 
@@ -34,7 +35,7 @@ $today = date('d/m/Y');
 
 <!-- Dashboard Container -->
 <div class="dash-content">
-    
+
     <!-- Header Section -->
     <div class="dash-header">
         <div class="dash-title">
@@ -52,8 +53,8 @@ $today = date('d/m/Y');
             </button>
         </div>
     </div>
-    
-    <?php 
+
+    <?php
     // Count critical (expired or <= 7 days) and warning (8-30 days)
     $criticalCount = 0;
     $warningCount30 = 0;
@@ -67,65 +68,65 @@ $today = date('d/m/Y');
     }
     $totalExpiryCount = count($expiring_products);
     ?>
-    
+
     <?php if ($totalExpiryCount > 0): ?>
-    <!-- Expiry Alert Banner -->
-    <div class="expiry-alert-banner <?= $criticalCount > 0 ? 'critical' : 'warning' ?>">
-        <div class="alert-content">
-            <div class="alert-icon <?= $criticalCount > 0 ? 'pulse' : '' ?>">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="alert-info">
-                <h4>
-                    <?php if ($criticalCount > 0): ?>
-                        ⚠️ <?= $criticalCount ?> lô hàng SẮP HẾT HẠN DƯỚI 7 NGÀY!
-                    <?php else: ?>
-                        📦 <?= $totalExpiryCount ?> lô hàng cần chú ý (hết hạn trong 30 ngày)
-                    <?php endif; ?>
-                </h4>
-                <p>
-                    <?php if ($criticalCount > 0): ?>
-                        Khẩn cấp: <strong><?= $criticalCount ?></strong> lô cần xử lý ngay
-                        <?php if ($warningCount30 > 0): ?>
-                            &nbsp;|&nbsp; Cảnh báo: <strong><?= $warningCount30 ?></strong> lô trong 30 ngày
+        <!-- Expiry Alert Banner -->
+        <div class="expiry-alert-banner <?= $criticalCount > 0 ? 'critical' : 'warning' ?>">
+            <div class="alert-content">
+                <div class="alert-icon <?= $criticalCount > 0 ? 'pulse' : '' ?>">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="alert-info">
+                    <h4>
+                        <?php if ($criticalCount > 0): ?>
+                            ⚠️ <?= $criticalCount ?> lô hàng SẮP HẾT HẠN DƯỚI 7 NGÀY!
+                        <?php else: ?>
+                            📦 <?= $totalExpiryCount ?> lô hàng cần chú ý (hết hạn trong 30 ngày)
                         <?php endif; ?>
-                    <?php else: ?>
-                        Cần lên kế hoạch khuyến mãi hoặc sử dụng sớm
-                    <?php endif; ?>
-                </p>
-            </div>
-            <div class="alert-actions">
-                <a href="<?= BASE_URL ?>/public/admin/report-expiry" class="btn-alert">
-                    <i class="fas fa-eye"></i> Xem Chi Tiết
-                </a>
+                    </h4>
+                    <p>
+                        <?php if ($criticalCount > 0): ?>
+                            Khẩn cấp: <strong><?= $criticalCount ?></strong> lô cần xử lý ngay
+                            <?php if ($warningCount30 > 0): ?>
+                                &nbsp;|&nbsp; Cảnh báo: <strong><?= $warningCount30 ?></strong> lô trong 30 ngày
+                            <?php endif; ?>
+                        <?php else: ?>
+                            Cần lên kế hoạch khuyến mãi hoặc sử dụng sớm
+                        <?php endif; ?>
+                    </p>
+                </div>
+                <div class="alert-actions">
+                    <a href="<?= BASE_URL ?>/public/admin/report-expiry" class="btn-alert">
+                        <i class="fas fa-eye"></i> Xem Chi Tiết
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
     <?php endif; ?>
-    
+
     <?php if ($lowStockCount > 0): ?>
-    <!-- Low Stock Alert Banner -->
-    <div class="expiry-alert-banner low-stock">
-        <div class="alert-content">
-            <div class="alert-icon">
-                <i class="fas fa-boxes"></i>
-            </div>
-            <div class="alert-info">
-                <h4>⚠️ <?= $lowStockCount ?> sản phẩm SẮP HẾT HÀNG!</h4>
-                <p>
-                    Hiện có <strong><?= $lowStockCount ?></strong> sản phẩm có số lượng tồn kho thấp (≤ 10). 
-                    Cần nhập thêm hàng ngay.
-                </p>
-            </div>
-            <div class="alert-actions">
-                <a href="<?= BASE_URL ?>/public/admin/products" class="btn-alert">
-                    <i class="fas fa-arrow-right"></i> Nhập Hàng
-                </a>
+        <!-- Low Stock Alert Banner -->
+        <div class="expiry-alert-banner low-stock">
+            <div class="alert-content">
+                <div class="alert-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="alert-info">
+                    <h4>⚠️ <?= $lowStockCount ?> sản phẩm SẮP HẾT HÀNG!</h4>
+                    <p>
+                        Hiện có <strong><?= $lowStockCount ?></strong> sản phẩm có số lượng tồn kho thấp (≤ 10).
+                        Cần nhập thêm hàng ngay.
+                    </p>
+                </div>
+                <div class="alert-actions">
+                    <a href="<?= BASE_URL ?>/public/admin/products" class="btn-alert">
+                        <i class="fas fa-arrow-right"></i> Nhập Hàng
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
     <?php endif; ?>
-    
+
     <!-- Stats Row -->
     <div class="stats-grid">
         <!-- Revenue Card -->
@@ -146,7 +147,7 @@ $today = date('d/m/Y');
                 <span class="trend-neutral">so với hôm qua</span>
             </div>
         </div>
-        
+
         <!-- Orders Card -->
         <div class="stat-card">
             <div class="stat-card-header">
@@ -163,7 +164,7 @@ $today = date('d/m/Y');
                 <span class="trend-neutral">Đang chờ xử lý</span>
             </div>
         </div>
-        
+
         <!-- Products Card -->
         <div class="stat-card">
             <div class="stat-card-header">
@@ -180,7 +181,7 @@ $today = date('d/m/Y');
                 <span class="trend-neutral">Mới thêm tuần này</span>
             </div>
         </div>
-        
+
         <!-- Warnings Card -->
         <div class="stat-card">
             <div class="stat-card-header">
@@ -198,9 +199,9 @@ $today = date('d/m/Y');
             </div>
         </div>
     </div>
-    
+
     <!-- Charts Row -->
-    <div class="charts-grid">
+    <div class="charts-grid" style="grid-template-columns: 2fr 1fr;">
         <!-- Revenue Chart -->
         <div class="chart-card">
             <div class="chart-card-header">
@@ -211,65 +212,38 @@ $today = date('d/m/Y');
                 <canvas id="revenueChart"></canvas>
             </div>
         </div>
-        
-        <!-- Profit Chart -->
+
+        <!-- Category Chart -->
         <div class="chart-card">
             <div class="chart-card-header">
-                <h3 class="chart-card-title">Biến động Lợi nhuận</h3>
-                <a href="<?= BASE_URL ?>/public/admin/report-profit" class="chart-card-link">Xem báo cáo</a>
+                <h3 class="chart-card-title">Tồn kho theo danh mục</h3>
             </div>
-            <div class="chart-container">
-                <canvas id="profitChart"></canvas>
+            <div class="chart-container" style="height: 220px;">
+                <canvas id="categoryChart"></canvas>
             </div>
-        </div>
-    </div>
-    
-    <!-- Warehouse Overview -->
-    <div class="overview-card">
-        <!-- Header -->
-        <div class="overview-card-header">
-            <div class="overview-card-header-left">
-                <div class="overview-icon">
-                    <i class="fas fa-warehouse"></i>
-                </div>
-                <div class="overview-card-title">
-                    <h3>Tổng quan Kho & Cảnh báo</h3>
-                    <p>Phân bố danh mục và cảnh báo cần xử lý ngay</p>
-                </div>
-            </div>
-            <button class="btn-outline" onclick="window.location.href='<?= BASE_URL ?>/public/admin/report-expiry'">
-                <i class="fas fa-cog"></i>
-                Cấu hình cảnh báo
-            </button>
-        </div>
-        
-        <!-- Content Grid -->
-        <div class="overview-grid">
-            <!-- Left: Category Chart -->
-            <div class="overview-left">
-                <h4 class="overview-section-title">Tồn kho theo danh mục</h4>
-                <div class="chart-container" style="height: 220px;">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                
-                <!-- Legend -->
-                <div class="category-legend">
-                    <?php 
-                    $colors = ['#7BC043', '#22d3ee', '#818cf8', '#f59e0b', '#ec4899'];
-                    $i = 0;
-                    foreach ($category_stats as $cat): 
-                        $percent = $cat['percent'] ?? 0;
+
+            <!-- Legend -->
+            <div class="category-legend">
+                <?php
+                $colors = ['#7BC043', '#22d3ee', '#818cf8', '#f59e0b', '#ec4899'];
+                $i = 0;
+                foreach ($category_stats as $cat):
+                    $percent = $cat['percent'] ?? 0;
                     ?>
                     <div class="legend-item">
                         <div class="legend-item-left">
                             <div class="legend-dot" style="background: <?= $colors[$i % 5] ?>"></div>
-                            <span class="legend-label"><?= htmlspecialchars($cat['Ten_danh_muc'] ?? 'Khác') ?></span>
+                            <span class="legend-label">
+                                <?= htmlspecialchars($cat['Ten_danh_muc'] ?? 'Khác') ?>
+                            </span>
                         </div>
-                        <span class="legend-value"><?= $percent ?>%</span>
+                        <span class="legend-value">
+                            <?= $percent ?>%
+                        </span>
                     </div>
                     <?php $i++; endforeach; ?>
-                    
-                    <?php if (empty($category_stats)): ?>
+
+                <?php if (empty($category_stats)): ?>
                     <div class="legend-item">
                         <div class="legend-item-left">
                             <div class="legend-dot" style="background: #7BC043"></div>
@@ -277,299 +251,151 @@ $today = date('d/m/Y');
                         </div>
                         <span class="legend-value">-</span>
                     </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-            
-            <!-- Right: Tables -->
-            <div class="overview-right">
-                <!-- Low Stock Table -->
-                <div class="overview-section">
-                    <div class="overview-section-header">
-                        <h4 class="overview-section-title">Sản phẩm sắp hết hàng</h4>
-                        <div class="filter-tabs">
-                            <button class="filter-tab active">Tất cả</button>
-                            <button class="filter-tab">Nguy cấp</button>
-                            <button class="filter-tab">Thấp</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Progress Bar -->
-                    <?php 
-                    $criticalCount = 0;
-                    $lowCount = 0;
-                    foreach ($low_stock_products as $p) {
-                        if (($p['So_luong_ton'] ?? 0) <= 5) $criticalCount++;
-                        else $lowCount++;
-                    }
-                    $total = $criticalCount + $lowCount;
-                    $criticalPercent = $total > 0 ? ($criticalCount / $total) * 100 : 0;
-                    $lowPercent = $total > 0 ? ($lowCount / $total) * 100 : 0;
-                    ?>
-                    <div class="progress-bar-container">
-                        <div class="progress-labels">
-                            <span class="danger">Nguy cấp (<?= $criticalCount ?>)</span>
-                            <span class="warning">Thấp (<?= $lowCount ?>)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-bar-danger" style="width: <?= $criticalPercent ?>%"></div>
-                            <div class="progress-bar-warning" style="width: <?= $lowPercent ?>%"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Table -->
-                    <div style="overflow-x: auto;">
-                        <table class="modern-table">
-                            <thead>
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th style="text-align: right;">Tồn kho</th>
-                                    <th style="text-align: center;">Trạng thái</th>
-                                    <th style="text-align: right;">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($low_stock_products)): ?>
-                                <tr>
-                                    <td colspan="4" style="text-align: center; color: var(--text-muted);">
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                                        Không có sản phẩm sắp hết hàng
-                                    </td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach (array_slice($low_stock_products, 0, 5) as $product): 
-                                    $qty = $product['So_luong_ton'] ?? 0;
-                                    $isCritical = $qty <= 5;
-                                ?>
-                                <tr>
-                                    <td>
-                                        <strong><?= htmlspecialchars($product['Ten'] ?? 'N/A') ?></strong>
-                                    </td>
-                                    <td style="text-align: right; font-family: monospace;">
-                                        <?= $qty ?> <?= $product['Don_vi_tinh'] ?? '' ?>
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <?php if ($isCritical): ?>
-                                        <span class="badge-danger">Nguy cấp</span>
-                                        <?php else: ?>
-                                        <span class="badge-warning">Thấp</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td style="text-align: right;">
-                                        <button class="btn-link-primary" onclick="window.location.href='<?= BASE_URL ?>/public/admin/product-edit/<?= $product['ID_sp'] ?? '' ?>'">
-                                            Nhập hàng
-                                        </button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Expiring Products -->
-                <div class="overview-section">
-                    <div class="overview-section-header">
-                        <h4 class="overview-section-title">Sản phẩm sắp hết hạn</h4>
-                        <div class="filter-tabs">
-                            <button class="filter-tab active">7 ngày tới</button>
-                            <button class="filter-tab">30 ngày tới</button>
-                        </div>
-                    </div>
-                    
-                    <div class="alert-items-grid">
-                        <?php if (empty($expiring_products)): ?>
-                        <div class="alert-item">
-                            <div class="alert-item-left">
-                                <div class="alert-item-icon" style="background: var(--success-bg); color: var(--success);">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <div class="alert-item-info">
-                                    <h4>Không có cảnh báo</h4>
-                                    <p>Tất cả sản phẩm còn hạn sử dụng</p>
-                                </div>
-                            </div>
-                        </div>
-                        <?php else: ?>
-                        <?php foreach (array_slice($expiring_products, 0, 4) as $product): 
-                            $daysLeft = $product['Ngay_con_lai'] ?? 0;
-                            $isDanger = $daysLeft <= 1;
-                        ?>
-                        <div class="alert-item <?= $isDanger ? 'danger' : '' ?>">
-                            <div class="alert-item-left">
-                                <div class="alert-item-icon <?= $isDanger ? 'danger' : 'warning' ?>">
-                                    <i class="fas fa-<?= $isDanger ? 'exclamation-circle' : 'clock' ?>"></i>
-                                </div>
-                                <div class="alert-item-info">
-                                    <h4>
-                                        <?= htmlspecialchars($product['Ten'] ?? 'N/A') ?>
-                                        <span>(#<?= $product['ID_sp'] ?? '' ?>)</span>
-                                    </h4>
-                                    <p><?= $product['Ten_danh_muc'] ?? 'Chưa phân loại' ?></p>
-                                </div>
-                            </div>
-                            <div class="alert-item-right">
-                                <span class="alert-item-badge <?= $isDanger ? 'danger' : 'warning' ?>">
-                                    <?php if ($daysLeft <= 0): ?>
-                                        Đã hết hạn
-                                    <?php elseif ($daysLeft == 1): ?>
-                                        Hết hạn ngày mai
-                                    <?php else: ?>
-                                        Còn <?= $daysLeft ?> ngày
-                                    <?php endif; ?>
-                                </span>
-                                <p class="alert-item-qty">SL: <?= $product['So_luong_ton'] ?? 0 ?></p>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                        <?php endif; ?>
-                        
-                        <!-- View All Link -->
-                        <a href="<?= BASE_URL ?>/public/admin/report-expiry" class="view-all-link">
-                            <span>Xem tất cả cảnh báo</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
-    
+
+
 </div>
+
+
+
+
+
 
 <!-- Chart.js Scripts -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Chart colors
-    const primaryColor = '#7BC043';
-    const primaryBg = 'rgba(123, 192, 67, 0.1)';
-    const profitColor = '#10b981';
-    const profitBg = 'rgba(16, 185, 129, 0.1)';
-    const gridColor = '#e7edf3';
-    const textColor = '#64748b';
-    
-    // Get chart data from PHP
-    const revenueData = <?= json_encode($chart_data ?: [0,0,0,0,0,0,0]) ?>;
-    const profitData = <?= json_encode($profit_data ?: [0,0,0,0,0,0,0]) ?>;
-    const labels = <?= json_encode(!empty($chart_labels) ? $chart_labels : ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']) ?>;
-    
-    // Common chart options
-    const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: '#ffffff',
-                titleColor: '#0f172a',
-                bodyColor: '#64748b',
-                borderColor: '#e2e8f0',
-                borderWidth: 1,
-                padding: 12,
-                displayColors: false
-            }
-        },
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: { color: textColor, font: { size: 12 } }
+    document.addEventListener('DOMContentLoaded', function () {
+        // Chart colors
+        const primaryColor = '#7BC043';
+        const primaryBg = 'rgba(123, 192, 67, 0.1)';
+        const profitColor = '#10b981';
+        const profitBg = 'rgba(16, 185, 129, 0.1)';
+        const gridColor = '#e7edf3';
+        const textColor = '#64748b';
+
+        // Get chart data from PHP
+        const revenueData = <?= json_encode($chart_data ?: [0, 0, 0, 0, 0, 0, 0]) ?>;
+        const profitData = <?= json_encode($profit_data ?: [0, 0, 0, 0, 0, 0, 0]) ?>;
+        const labels = <?= json_encode(!empty($chart_labels) ? $chart_labels : ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']) ?>;
+
+        // Common chart options
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#ffffff',
+                    titleColor: '#0f172a',
+                    bodyColor: '#64748b',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false
+                }
             },
-            y: {
-                beginAtZero: true,
-                grid: { color: gridColor, drawBorder: false },
-                ticks: { color: textColor, font: { size: 12 } }
-            }
-        }
-    };
-    
-    // Revenue Chart
-    const revenueCtx = document.getElementById('revenueChart');
-    if (revenueCtx) {
-        new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Doanh thu (Triệu VNĐ)',
-                    data: revenueData,
-                    borderColor: primaryColor,
-                    backgroundColor: primaryBg,
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: primaryColor,
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: commonOptions
-        });
-    }
-    
-    // Profit Chart
-    const profitCtx = document.getElementById('profitChart');
-    if (profitCtx) {
-        new Chart(profitCtx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Lợi nhuận (Triệu VNĐ)',
-                    data: profitData,
-                    borderColor: profitColor,
-                    backgroundColor: profitBg,
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: profitColor,
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 6
-                }]
-            },
-            options: commonOptions
-        });
-    }
-    
-    // Category Doughnut Chart
-    const categoryCtx = document.getElementById('categoryChart');
-    if (categoryCtx) {
-        const categoryData = <?= json_encode(array_column($category_stats, 'percent') ?: [45, 30, 25]) ?>;
-        const categoryLabels = <?= json_encode(array_column($category_stats, 'Ten_danh_muc') ?: ['Rau củ', 'Sữa', 'Thịt']) ?>;
-        const categoryColors = ['#7BC043', '#22d3ee', '#818cf8', '#f59e0b', '#ec4899'];
-        
-        new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: {
-                labels: categoryLabels,
-                datasets: [{
-                    data: categoryData,
-                    backgroundColor: categoryColors.slice(0, categoryData.length),
-                    borderWidth: 0,
-                    hoverOffset: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#ffffff',
-                        bodyColor: '#64748b',
-                        borderColor: '#e2e8f0',
-                        borderWidth: 1
-                    }
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: textColor, font: { size: 12 } }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: textColor, font: { size: 12 } }
                 }
             }
-        });
-    }
-});
+        };
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart');
+        if (revenueCtx) {
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Doanh thu (Triệu VNĐ)',
+                        data: revenueData,
+                        borderColor: primaryColor,
+                        backgroundColor: primaryBg,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: primaryColor,
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: commonOptions
+            });
+        }
+
+        // Profit Chart
+        const profitCtx = document.getElementById('profitChart');
+        if (profitCtx) {
+            new Chart(profitCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Lợi nhuận (Triệu VNĐ)',
+                        data: profitData,
+                        borderColor: profitColor,
+                        backgroundColor: profitBg,
+                        borderWidth: 2.5,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: profitColor,
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: commonOptions
+            });
+        }
+
+        // Category Doughnut Chart
+        const categoryCtx = document.getElementById('categoryChart');
+        if (categoryCtx) {
+            const categoryData = <?= json_encode(array_column($category_stats, 'percent') ?: [45, 30, 25]) ?>;
+            const categoryLabels = <?= json_encode(array_column($category_stats, 'Ten_danh_muc') ?: ['Rau củ', 'Sữa', 'Thịt']) ?>;
+            const categoryColors = ['#7BC043', '#22d3ee', '#818cf8', '#f59e0b', '#ec4899'];
+
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryData,
+                        backgroundColor: categoryColors.slice(0, categoryData.length),
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#ffffff',
+                            bodyColor: '#64748b',
+                            borderColor: '#e2e8f0',
+                            borderWidth: 1
+                        }
+                    }
+                }
+            });
+        }
+    });
 </script>
 
 <?php include __DIR__ . '/layouts/footer.php'; ?>

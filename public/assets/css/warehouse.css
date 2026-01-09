@@ -67,19 +67,22 @@ body {
 .wh-field label {
   display: block;
   font-size: 13px;
-  font-weight: 700;
-  color: #2e7d32;
+  font-weight: 400;
+  color: #000000;
   margin-bottom: 6px;
 }
 
 .wh-field input,
-.wh-field textarea {
+.wh-field textarea,
+.wh-field select {
   width: 100%;
   padding: 11px 14px;
   border-radius: 10px;
   border: 1px solid #c8e6c9;
   outline: none;
   background: #ffffff;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .wh-field textarea {
@@ -88,7 +91,8 @@ body {
 }
 
 .wh-field input:focus,
-.wh-field textarea:focus {
+.wh-field textarea:focus,
+.wh-field select:focus {
   border-color: #2e7d32;
   box-shadow: 0 0 0 3px rgba(46, 125, 50, .15);
 }
@@ -147,10 +151,10 @@ body {
 
 .wh-table th {
   font-size: 12px;
-  color: #2e7d32;
+  color: #000000;
   letter-spacing: .04em;
   text-transform: uppercase;
-  font-weight: 900;
+  font-weight: 500;
 }
 
 .wh-table tbody tr:hover {
@@ -164,7 +168,7 @@ body {
 }
 
 .wh-bold {
-  font-weight: 900;
+  font-weight: 400;
 }
 
 .wh-link {
@@ -185,14 +189,14 @@ body {
   padding: 10px 16px;
   border-radius: 12px;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 500;
   transition: .2s;
 }
 
 .wh-btn-primary {
-  background: linear-gradient(135deg, #2e7d32, #43a047);
+  background: #7BC043;
   color: #ffffff;
-  box-shadow: 0 6px 16px rgba(46, 125, 50, .35);
+  box-shadow: 0 6px 16px rgba(123, 192, 67, .35);
 }
 
 .wh-btn-primary:hover {
@@ -209,7 +213,7 @@ body {
 }
 
 .wh-btn-success {
-  background: #2e7d32;
+  background: #7BC043;
   color: #ffffff;
 }
 
@@ -285,9 +289,9 @@ body {
 }
 
 .wh-pagebtn.active {
-  background: #2e7d32;
+  background: #7BC043;
   color: #ffffff;
-  border-color: #2e7d32;
+  border-color: #7BC043;
 }
 
 /* =========================================================
@@ -327,7 +331,8 @@ body {
 
 .wh-modal-title {
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 600;
+  color: #000000;
 }
 
 .wh-modal-sub {
@@ -375,7 +380,9 @@ body {
 
 .wh-panel-title {
   margin: 0 0 10px;
-  font-weight: 900;
+  font-weight: 600;
+  color: #000000;
+  font-size: 15px;
 }
 
 .wh-grid-2 {
@@ -409,7 +416,8 @@ body {
 .wh-total {
   font-size: 16px;
   padding-top: 6px;
-  font-weight: 900;
+  font-weight: 500;
+  color: #000000;
 }
 
 .wh-total-right {

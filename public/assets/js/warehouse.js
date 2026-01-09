@@ -140,7 +140,6 @@ function bindSearch(inputId, boxId, callback) {
 function clearAddPick() {
   document.getElementById('wh-add-ma').value = '';
   document.getElementById('wh-add-dvt').value = '';
-  document.getElementById('wh-add-gia').value = '';
   document.getElementById('wh-add-qty').value = 1;
   document.getElementById('wh-add-price').value = 0;
   addSelected = null;
@@ -150,7 +149,6 @@ bindSearch('wh-add-q', 'wh-add-suggest', p => {
   addSelected = p;
   document.getElementById('wh-add-ma').value = p.Ma;
   document.getElementById('wh-add-dvt').value = p.Don_vi_tinh;
-  document.getElementById('wh-add-gia').value = money(p.Gia_hien_tai);
   document.getElementById('wh-add-price').value = p.Gia_hien_tai;
 });
 
@@ -159,6 +157,14 @@ function addLine() {
 
   const qty = Math.max(1, parseInt(document.getElementById('wh-add-qty').value || '1', 10));
   const price = Math.max(0, parseFloat(document.getElementById('wh-add-price').value || '0'));
+  const supplierId = document.getElementById('wh-add-supplier').value;
+  const supplierText = document.getElementById('wh-add-supplier').selectedOptions[0]?.text || '';
+  const categoryId = document.getElementById('wh-add-category').value;
+  const categoryText = document.getElementById('wh-add-category').selectedOptions[0]?.text || '';
+
+  // Validation: Kiểm tra nhà cung cấp và danh mục
+  if (!supplierId) return alert('Vui lòng chọn nhà cung cấp');
+  if (!categoryId) return alert('Vui lòng chọn danh mục');
 
   addLines.push({
     ID_sp: addSelected.ID_sp,
@@ -166,11 +172,17 @@ function addLine() {
     Don_vi_tinh: addSelected.Don_vi_tinh,
     Gia_hien_tai: addSelected.Gia_hien_tai,
     So_luong: qty,
-    Don_gia_nhap: price
+    Don_gia_nhap: price,
+    ID_ncc: supplierId,
+    Ten_ncc: supplierText,
+    Danh_muc: categoryId,
+    Ten_danh_muc: categoryText
   });
 
   clearAddPick();
   document.getElementById('wh-add-q').value = '';
+  document.getElementById('wh-add-supplier').value = '';
+  document.getElementById('wh-add-category').value = '';
   renderAddLines();
 }
 
@@ -179,7 +191,7 @@ function renderAddLines() {
   const total = document.getElementById('wh-add-total');
 
   if (!addLines.length) {
-    tb.innerHTML = `<tr><td colspan="7" class="wh-empty">Chưa có sản phẩm</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="8" class="wh-empty">Chưa có sản phẩm</td></tr>`;
     total.textContent = money(0);
     return;
   }
@@ -193,11 +205,10 @@ function renderAddLines() {
       <tr>
         <td>${x.Ten_sp}</td>
         <td>${x.Don_vi_tinh}</td>
-        <td>${money(x.Gia_hien_tai || 0)}</td>
-        <td><input type="number" min="1" value="${x.So_luong}"
-            onchange="addLines[${i}].So_luong=Math.max(1,parseInt(this.value||'1',10));renderAddLines()"></td>
-        <td><input type="number" min="0" value="${x.Don_gia_nhap}"
-            onchange="addLines[${i}].Don_gia_nhap=Math.max(0,parseFloat(this.value||'0'));renderAddLines()"></td>
+        <td>${x.Ten_ncc || '-'}</td>
+        <td>${x.Ten_danh_muc || '-'}</td>
+        <td>${x.So_luong}</td>
+        <td>${money(x.Don_gia_nhap)}</td>
         <td class="wh-bold">${money(t)}</td>
         <td><button type="button" class="wh-icon wh-danger"
             onclick="addLines.splice(${i},1);renderAddLines()">🗑</button></td>
