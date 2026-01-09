@@ -47,7 +47,7 @@ $today = date('d/m/Y');
                 <i class="fas fa-sync-alt"></i>
                 Làm mới
             </button>
-            <button class="btn-outline" onclick="window.location.href='<?= BASE_URL ?>/admin/export-products'">
+            <button class="btn-outline" onclick="window.location.href='<?= BASE_URL ?>/public/admin/export-products'">
                 <i class="fas fa-download"></i>
                 Xuất dữ liệu
             </button>
@@ -102,61 +102,29 @@ $today = date('d/m/Y');
                 </div>
             </div>
         </div>
-    <!-- Expiry Alert Banner -->
-    <div class="expiry-alert-banner <?= $criticalCount > 0 ? 'critical' : 'warning' ?>">
-        <div class="alert-content">
-            <div class="alert-icon <?= $criticalCount > 0 ? 'pulse' : '' ?>">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="alert-info">
-                <h4>
-                    <?php if ($criticalCount > 0): ?>
-                        ⚠️ <?= $criticalCount ?> lô hàng SẮP HẾT HẠN DƯỚI 7 NGÀY!
-                    <?php else: ?>
-                        📦 <?= $totalExpiryCount ?> lô hàng cần chú ý (hết hạn trong 30 ngày)
-                    <?php endif; ?>
-                </h4>
-                <p>
-                    <?php if ($criticalCount > 0): ?>
-                        Khẩn cấp: <strong><?= $criticalCount ?></strong> lô cần xử lý ngay
-                        <?php if ($warningCount30 > 0): ?>
-                            &nbsp;|&nbsp; Cảnh báo: <strong><?= $warningCount30 ?></strong> lô trong 30 ngày
-                        <?php endif; ?>
-                    <?php else: ?>
-                        Cần lên kế hoạch khuyến mãi hoặc sử dụng sớm
-                    <?php endif; ?>
-                </p>
-            </div>
-            <div class="alert-actions">
-                <a href="<?= BASE_URL ?>/admin/report-expiry" class="btn-alert">
-                    <i class="fas fa-eye"></i> Xem Chi Tiết
-                </a>
-            </div>
-        </div>
-    </div>
     <?php endif; ?>
 
     <?php if ($lowStockCount > 0): ?>
-    <!-- Low Stock Alert Banner -->
-    <div class="expiry-alert-banner low-stock">
-        <div class="alert-content">
-            <div class="alert-icon">
-                <i class="fas fa-boxes"></i>
-            </div>
-            <div class="alert-info">
-                <h4>⚠️ <?= $lowStockCount ?> sản phẩm SẮP HẾT HÀNG!</h4>
-                <p>
-                    Hiện có <strong><?= $lowStockCount ?></strong> sản phẩm có số lượng tồn kho thấp (≤ 10). 
-                    Cần nhập thêm hàng ngay.
-                </p>
-            </div>
-            <div class="alert-actions">
-                <a href="<?= BASE_URL ?>/admin/products" class="btn-alert">
-                    <i class="fas fa-arrow-right"></i> Nhập Hàng
-                </a>
+        <!-- Low Stock Alert Banner -->
+        <div class="expiry-alert-banner low-stock">
+            <div class="alert-content">
+                <div class="alert-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="alert-info">
+                    <h4>⚠️ <?= $lowStockCount ?> sản phẩm SẮP HẾT HÀNG!</h4>
+                    <p>
+                        Hiện có <strong><?= $lowStockCount ?></strong> sản phẩm có số lượng tồn kho thấp (≤ 10).
+                        Cần nhập thêm hàng ngay.
+                    </p>
+                </div>
+                <div class="alert-actions">
+                    <a href="<?= BASE_URL ?>/public/admin/products" class="btn-alert">
+                        <i class="fas fa-arrow-right"></i> Nhập Hàng
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
     <?php endif; ?>
 
     <!-- Stats Row -->
@@ -238,7 +206,7 @@ $today = date('d/m/Y');
         <div class="chart-card">
             <div class="chart-card-header">
                 <h3 class="chart-card-title">Xu hướng Doanh thu</h3>
-                <a href="<?= BASE_URL ?>/admin/report-profit" class="chart-card-link">Xem báo cáo</a>
+                <a href="<?= BASE_URL ?>/public/admin/report-profit" class="chart-card-link">Xem báo cáo</a>
             </div>
             <div class="chart-container">
                 <canvas id="revenueChart"></canvas>
@@ -248,50 +216,19 @@ $today = date('d/m/Y');
         <!-- Category Chart -->
         <div class="chart-card">
             <div class="chart-card-header">
-                <h3 class="chart-card-title">Biến động Lợi nhuận</h3>
-                <a href="<?= BASE_URL ?>/admin/report-profit" class="chart-card-link">Xem báo cáo</a>
+                <h3 class="chart-card-title">Tồn kho theo danh mục</h3>
             </div>
-            <div class="chart-container">
-                <canvas id="profitChart"></canvas>
+            <div class="chart-container" style="height: 220px;">
+                <canvas id="categoryChart"></canvas>
             </div>
-        </div>
-    </div>
-    
-    <!-- Warehouse Overview -->
-    <div class="overview-card">
-        <!-- Header -->
-        <div class="overview-card-header">
-            <div class="overview-card-header-left">
-                <div class="overview-icon">
-                    <i class="fas fa-warehouse"></i>
-                </div>
-                <div class="overview-card-title">
-                    <h3>Tổng quan Kho & Cảnh báo</h3>
-                    <p>Phân bố danh mục và cảnh báo cần xử lý ngay</p>
-                </div>
-            </div>
-            <button class="btn-outline" onclick="window.location.href='<?= BASE_URL ?>/admin/report-expiry'">
-                <i class="fas fa-cog"></i>
-                Cấu hình cảnh báo
-            </button>
-        </div>
-        
-        <!-- Content Grid -->
-        <div class="overview-grid">
-            <!-- Left: Category Chart -->
-            <div class="overview-left">
-                <h4 class="overview-section-title">Tồn kho theo danh mục</h4>
-                <div class="chart-container" style="height: 220px;">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-                
-                <!-- Legend -->
-                <div class="category-legend">
-                    <?php 
-                    $colors = ['#7BC043', '#22d3ee', '#818cf8', '#f59e0b', '#ec4899'];
-                    $i = 0;
-                    foreach ($category_stats as $cat): 
-                        $percent = $cat['percent'] ?? 0;
+
+            <!-- Legend -->
+            <div class="category-legend">
+                <?php
+                $colors = ['#7BC043', '#22d3ee', '#818cf8', '#f59e0b', '#ec4899'];
+                $i = 0;
+                foreach ($category_stats as $cat):
+                    $percent = $cat['percent'] ?? 0;
                     ?>
                     <div class="legend-item">
                         <div class="legend-item-left">
@@ -314,166 +251,18 @@ $today = date('d/m/Y');
                         </div>
                         <span class="legend-value">-</span>
                     </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-            
-            <!-- Right: Tables -->
-            <div class="overview-right">
-                <!-- Low Stock Table -->
-                <div class="overview-section">
-                    <div class="overview-section-header">
-                        <h4 class="overview-section-title">Sản phẩm sắp hết hàng</h4>
-                        <div class="filter-tabs">
-                            <button class="filter-tab active">Tất cả</button>
-                            <button class="filter-tab">Nguy cấp</button>
-                            <button class="filter-tab">Thấp</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Progress Bar -->
-                    <?php 
-                    $criticalCount = 0;
-                    $lowCount = 0;
-                    foreach ($low_stock_products as $p) {
-                        if (($p['So_luong_ton'] ?? 0) <= 5) $criticalCount++;
-                        else $lowCount++;
-                    }
-                    $total = $criticalCount + $lowCount;
-                    $criticalPercent = $total > 0 ? ($criticalCount / $total) * 100 : 0;
-                    $lowPercent = $total > 0 ? ($lowCount / $total) * 100 : 0;
-                    ?>
-                    <div class="progress-bar-container">
-                        <div class="progress-labels">
-                            <span class="danger">Nguy cấp (<?= $criticalCount ?>)</span>
-                            <span class="warning">Thấp (<?= $lowCount ?>)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-bar-danger" style="width: <?= $criticalPercent ?>%"></div>
-                            <div class="progress-bar-warning" style="width: <?= $lowPercent ?>%"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Table -->
-                    <div style="overflow-x: auto;">
-                        <table class="modern-table">
-                            <thead>
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th style="text-align: right;">Tồn kho</th>
-                                    <th style="text-align: center;">Trạng thái</th>
-                                    <th style="text-align: right;">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($low_stock_products)): ?>
-                                <tr>
-                                    <td colspan="4" style="text-align: center; color: var(--text-muted);">
-                                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                                        Không có sản phẩm sắp hết hàng
-                                    </td>
-                                </tr>
-                                <?php else: ?>
-                                <?php foreach (array_slice($low_stock_products, 0, 5) as $product): 
-                                    $qty = $product['So_luong_ton'] ?? 0;
-                                    $isCritical = $qty <= 5;
-                                ?>
-                                <tr>
-                                    <td>
-                                        <strong><?= htmlspecialchars($product['Ten'] ?? 'N/A') ?></strong>
-                                    </td>
-                                    <td style="text-align: right; font-family: monospace;">
-                                        <?= $qty ?> <?= $product['Don_vi_tinh'] ?? '' ?>
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <?php if ($isCritical): ?>
-                                        <span class="badge-danger">Nguy cấp</span>
-                                        <?php else: ?>
-                                        <span class="badge-warning">Thấp</span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td style="text-align: right;">
-                                        <button class="btn-link-primary" onclick="window.location.href='<?= BASE_URL ?>/admin/product-edit/<?= $product['ID_sp'] ?? '' ?>'">
-                                            Nhập hàng
-                                        </button>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                <!-- Expiring Products -->
-                <div class="overview-section">
-                    <div class="overview-section-header">
-                        <h4 class="overview-section-title">Sản phẩm sắp hết hạn</h4>
-                        <div class="filter-tabs">
-                            <button class="filter-tab active">7 ngày tới</button>
-                            <button class="filter-tab">30 ngày tới</button>
-                        </div>
-                    </div>
-                    
-                    <div class="alert-items-grid">
-                        <?php if (empty($expiring_products)): ?>
-                        <div class="alert-item">
-                            <div class="alert-item-left">
-                                <div class="alert-item-icon" style="background: var(--success-bg); color: var(--success);">
-                                    <i class="fas fa-check"></i>
-                                </div>
-                                <div class="alert-item-info">
-                                    <h4>Không có cảnh báo</h4>
-                                    <p>Tất cả sản phẩm còn hạn sử dụng</p>
-                                </div>
-                            </div>
-                        </div>
-                        <?php else: ?>
-                        <?php foreach (array_slice($expiring_products, 0, 4) as $product): 
-                            $daysLeft = $product['Ngay_con_lai'] ?? 0;
-                            $isDanger = $daysLeft <= 1;
-                        ?>
-                        <div class="alert-item <?= $isDanger ? 'danger' : '' ?>">
-                            <div class="alert-item-left">
-                                <div class="alert-item-icon <?= $isDanger ? 'danger' : 'warning' ?>">
-                                    <i class="fas fa-<?= $isDanger ? 'exclamation-circle' : 'clock' ?>"></i>
-                                </div>
-                                <div class="alert-item-info">
-                                    <h4>
-                                        <?= htmlspecialchars($product['Ten'] ?? 'N/A') ?>
-                                        <span>(#<?= $product['ID_sp'] ?? '' ?>)</span>
-                                    </h4>
-                                    <p><?= $product['Ten_danh_muc'] ?? 'Chưa phân loại' ?></p>
-                                </div>
-                            </div>
-                            <div class="alert-item-right">
-                                <span class="alert-item-badge <?= $isDanger ? 'danger' : 'warning' ?>">
-                                    <?php if ($daysLeft <= 0): ?>
-                                        Đã hết hạn
-                                    <?php elseif ($daysLeft == 1): ?>
-                                        Hết hạn ngày mai
-                                    <?php else: ?>
-                                        Còn <?= $daysLeft ?> ngày
-                                    <?php endif; ?>
-                                </span>
-                                <p class="alert-item-qty">SL: <?= $product['So_luong_ton'] ?? 0 ?></p>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                        <?php endif; ?>
-                        
-                        <!-- View All Link -->
-                        <a href="<?= BASE_URL ?>/admin/report-expiry" class="view-all-link">
-                            <span>Xem tất cả cảnh báo</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
-    
+
+
 </div>
+
+
+
+
+
 
 <!-- Chart.js Scripts -->
 <script>
