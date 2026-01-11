@@ -53,7 +53,9 @@ class Disposal extends Model
                 'Ngay_huy' => $date,
                 'Loai_phieu' => $type,
                 'Ly_do' => $reason,
-                'Trang_thai' => 'cho_duyet'
+                'Trang_thai' => 'da_duyet',  // Auto-approve
+                'Nguoi_duyet' => $userId,    // Set approver to creator
+                'Ngay_duyet' => date('Y-m-d H:i:s')  // Set approval date
             ]);
 
             if (!$disposalId) {

@@ -73,27 +73,8 @@
                 </div>
             </div>
 
-            <!-- Card 3: Chờ duyệt -->
-            <div class="stat-card" style="border-left: 4px solid var(--admin-warning);">
-                <div class="stat-card-header">
-                    <div class="stat-card-info">
-                        <h4>Chờ duyệt</h4>
-                        <p class="stat-card-value" style="color: var(--admin-warning);">
-                            <?= number_format($status_counts['cho_duyet'] ?? 0) ?> phiếu
-                        </p>
-                    </div>
-                    <div class="stat-card-icon warning">
-                        <i class="fas fa-box-open"></i>
-                    </div>
-                </div>
-                <div class="stat-card-footer">
-                    <span class="stat-badge warning">
-                        Chờ xử lý
-                    </span>
-                </div>
-            </div>
 
-            <!-- Card 4: Đã duyệt -->
+            <!-- Card 3: Đã duyệt -->
             <div class="stat-card" style="border-left: 4px solid var(--admin-info);">
                 <div class="stat-card-header">
                     <div class="stat-card-info">
@@ -141,16 +122,6 @@
                         </select>
                     </div>
 
-                    <div class="form-group" style="min-width: 150px;">
-                        <select name="status" class="form-select" onchange="this.form.submit()">
-                            <option value="">Trạng thái</option>
-                            <option value="cho_duyet" <?= ($filters['trang_thai'] ?? '') == 'cho_duyet' ? 'selected' : '' ?>>Chờ duyệt</option>
-                            <option value="da_duyet" <?= ($filters['trang_thai'] ?? '') == 'da_duyet' ? 'selected' : '' ?>>
-                                Đã duyệt</option>
-                            <option value="tu_choi" <?= ($filters['trang_thai'] ?? '') == 'tu_choi' ? 'selected' : '' ?>>Từ
-                                chối</option>
-                        </select>
-                    </div>
 
                     <a href="<?= BASE_URL ?>/admin/disposals" class="btn-admin-secondary" title="Reset">
                         <i class="fas fa-undo"></i>
