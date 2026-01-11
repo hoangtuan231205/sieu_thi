@@ -850,27 +850,50 @@ class Product extends Model {
      * @return array
      */
     public function searchForDisposal($keyword, $limit = 20) {
-        // Lấy kết quả từ searchForWarehouse
-        $results = $this->searchForWarehouse($keyword, $limit * 2);
+        // Tìm theo TÊN sản phẩm, MÃ sản phẩm, hoặc MÃ LÔ NHẬP (Ma_phieu_nhap)
+        // Trả về danh sách sản phẩm + thông tin số lô để user chọn lô cụ thể khi hủy
+        $keyword = trim($keyword);
         
-        // Lấy danh sách ID sản phẩm đã có phiếu hủy (chờ duyệt HOẶC đã duyệt) với ID_lo_nhap = NULL
-        // Chỉ khi từ chối (tu_choi) mới hiện lại
-        $excludedIds = $this->db->query("SELECT DISTINCT cth.ID_sp 
-            FROM chi_tiet_phieu_huy cth 
-            JOIN phieu_huy ph ON cth.ID_phieu_huy = ph.ID_phieu_huy 
-            WHERE ph.Trang_thai IN ('cho_duyet', 'da_duyet') 
-            AND cth.ID_lo_nhap IS NULL")->fetchAll(PDO::FETCH_COLUMN);
+        $sql = "SELECT DISTINCT 
+                    p.ID_sp, 
+                    p.Ma_hien_thi, 
+                    p.Ten, 
+                    p.Don_vi_tinh, 
+                    p.So_luong_ton, 
+                    p.Gia_nhap,
+                    p.Hinh_anh
+                FROM san_pham p
+                LEFT JOIN chi_tiet_phieu_nhap ct ON p.ID_sp = ct.ID_sp
+                LEFT JOIN phieu_nhap_kho pn ON ct.ID_phieu_nhap = pn.ID_phieu_nhap
+                WHERE p.Trang_thai = 'active'
+                AND p.So_luong_ton > 0
+                AND (
+                    p.Ten LIKE ? 
+                    OR p.Ma_hien_thi LIKE ?
+                    OR pn.Ma_hien_thi LIKE ?
+                )
+                ORDER BY 
+                    CASE 
+                        WHEN p.Ma_hien_thi LIKE ? THEN 1
+                        WHEN pn.Ma_hien_thi LIKE ? THEN 2
+                        ELSE 3 
+                    END,
+                    p.Ten ASC
+                LIMIT ?";
         
-        // Lọc bỏ sản phẩm đã trong danh sách loại trừ
-        $filtered = [];
-        foreach ($results as $product) {
-            if (!in_array($product['ID_sp'], $excludedIds)) {
-                $filtered[] = $product;
-                if (count($filtered) >= $limit) break;
-            }
-        }
+        $searchPattern = '%' . $keyword . '%';
+        $exactPattern = $keyword . '%';
         
-        return $filtered;
+        $results = $this->db->query($sql, [
+            $searchPattern,   // Ten LIKE
+            $searchPattern,   // Ma_hien_thi LIKE  
+            $searchPattern,   // Ma_phieu_nhap LIKE
+            $exactPattern,    // ORDER CASE 1
+            $exactPattern,    // ORDER CASE 2
+            $limit
+        ])->fetchAll();
+        
+        return $results;
     }
     
     /**

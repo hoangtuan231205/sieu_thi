@@ -303,8 +303,8 @@
             <input type="hidden" name="items[${itemIndex}][Ten_sp]" value="${product.Ten}">
             <input type="hidden" name="items[${itemIndex}][Gia_nhap]" value="${defaultPrice}" id="price_${itemIndex}">
         </td>
-        <td><select class="form-select form-select-sm" name="items[${itemIndex}][ID_lo_nhap]" onchange="updateBatchPrice(${itemIndex}, this)" style="border-radius: 6px; min-width: 180px; font-weight: 500;">${batchOptions}</select></td>
-        <td><input type="number" class="form-control form-control-sm" name="items[${itemIndex}][So_luong]" min="1" value="${prefillQty}" onchange="updateRowTotal(${itemIndex})" required style="border-radius: 6px; text-align: center;"></td>
+        <td><select class="form-select form-select-sm" name="items[${itemIndex}][ID_lo_nhap]" onchange="updateBatchPrice(${itemIndex}, this)" style="border-radius: 6px; min-width: 230px; font-weight: 500;">${batchOptions}</select></td>
+        <td><input type="number" class="form-control form-control-sm" name="items[${itemIndex}][So_luong]" min="1" value="${prefillQty}" onchange="updateRowTotal(${itemIndex})" required style="border-radius: 6px;min-width: 95px; text-align: center;"></td>
         <td id="priceDisplay_${itemIndex}">${Number(defaultPrice).toLocaleString()}đ</td>
         <td id="rowTotal_${itemIndex}" style="font-weight: 600;">${Number(defaultPrice * prefillQty).toLocaleString()}đ</td>
         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(${itemIndex})" style="border-radius: 6px;"><i class="fas fa-trash"></i></button></td>
@@ -360,38 +360,35 @@
                 showNotification('Vui lòng thêm ít nhất 1 sản phẩm', 'error');
             }
         });
-
         // Auto-add product from prefill data (từ trang cảnh báo hết hạn)
-        document.addEventListener('DOMContentLoaded', function () {
-            <?php if (!empty($prefill_product)): ?>
-                // Add prefilled product automatically (từ trang cảnh báo hết hạn)
-                const product = {
-                    ID_sp: <?= (int) $prefill_product['ID_sp'] ?>,
-                    Ma_hien_thi: '<?= addslashes($prefill_product['Ma_hien_thi'] ?? '') ?>',
-                    Ten: '<?= addslashes($prefill_product['Ten'] ?? '') ?>',
-                    Don_vi_tinh: '<?= addslashes($prefill_product['Don_vi_tinh'] ?? '') ?>',
-                    So_luong_ton: <?= (int) ($prefill_product['So_luong_ton'] ?? 0) ?>,
-                    Gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
-                };
+        // NOTE: Chạy trực tiếp sau khi các function được định nghĩa, không cần nested DOMContentLoaded
+        <?php if (!empty($prefill_product)): ?>
+            // Add prefilled product automatically (từ trang cảnh báo hết hạn)
+            const prefillProduct = {
+                ID_sp: <?= (int) $prefill_product['ID_sp'] ?>,
+                Ma_hien_thi: '<?= addslashes($prefill_product['Ma_hien_thi'] ?? '') ?>',
+                Ten: '<?= addslashes($prefill_product['Ten'] ?? '') ?>',
+                Don_vi_tinh: '<?= addslashes($prefill_product['Don_vi_tinh'] ?? '') ?>',
+                So_luong_ton: <?= (int) ($prefill_product['So_luong_ton'] ?? 0) ?>,
+                Gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
+            };
 
-                // Create batches array with prefilled batch info
-                const prefillBatches = [];
-                <?php if (!empty($prefill_batch_code)): ?>
-                    prefillBatches.push({
-                        ID_chi_tiet_nhap: <?= (int) ($prefill_batch_id ?? 0) ?>,
-                        Ma_phieu_nhap: '<?= addslashes($prefill_batch_code ?? '') ?>',
-                        So_luong_con: <?= (int) $prefill_quantity ?>,
-                        Don_gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
-                    });
-                <?php endif; ?>
-
-                selectedProduct = product;
-                addProductRow(product, prefillBatches, <?= (int) $prefill_quantity ?>);
-
-                // Show success notification
-                showNotification('Đã tự động thêm sản phẩm "' + product.Ten + '" - Số lượng: <?= (int) $prefill_quantity ?>', 'success');
+            // Create batches array with prefilled batch info
+            const prefillBatches = [];
+            <?php if (!empty($prefill_batch_code)): ?>
+                prefillBatches.push({
+                    ID_chi_tiet_nhap: <?= (int) ($prefill_batch_id ?? 0) ?>,
+                    Ma_phieu_nhap: '<?= addslashes($prefill_batch_code ?? '') ?>',
+                    So_luong_con: <?= (int) $prefill_quantity ?>,
+                    Don_gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
+                });
             <?php endif; ?>
-        });
+
+            addProductRow(prefillProduct, prefillBatches, <?= (int) $prefill_quantity ?>);
+
+            // Show success notification
+            showNotification('Đã tự động thêm sản phẩm "' + prefillProduct.Ten + '" - Số lượng: <?= (int) $prefill_quantity ?>', 'success');
+        <?php endif; ?>
     }); // End DOMContentLoaded
 </script>
 

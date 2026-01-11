@@ -1,3 +1,9 @@
 [2026-01-11 07:16:51] [INFO] [cart] Removed cart item 49 for user 1 
 [2026-01-11 07:17:00] [INFO] [cart] Removed cart item 52 for user 1 
 [2026-01-11 16:01:30] [INFO] [cart] User initiated buy now for product 74 (qty=1) {"user_id":1,"product_id":74}
+[2026-01-11 16:08:27] [INFO] [cart] Updated cart item 51 for user 1 
+[2026-01-11 16:08:41] [INFO] [cart] Added product 91 to cart for user 1 
+[2026-01-11 17:15:27] [INFO] [cart] User initiated buy now for product 9 (qty=1) {"user_id":1,"product_id":9}
+[2026-01-11 17:18:24] [INFO] [cart] User initiated buy now for product 10 (qty=1) {"user_id":1,"product_id":10}
+[2026-01-11 19:54:43] [INFO] [cart] User initiated buy now for product 5 (qty=1) {"user_id":1,"product_id":5}
+[2026-01-11 19:57:43] [INFO] [cart] User initiated buy now for product 5 (qty=1) {"user_id":1,"product_id":5}

@@ -81,6 +81,7 @@
               <th>GIÁ HIỆN TẠI</th>
               <th>SỐ LƯỢNG</th>
               <th>ĐƠN GIÁ</th>
+              <th>HẠN SỬ DỤNG</th>
               <th>THÀNH TIỀN</th>
               <th></th>
             </tr>

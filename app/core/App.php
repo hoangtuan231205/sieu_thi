@@ -18,8 +18,7 @@ class App {
      */
     protected $params = [];
     
-    /**
-     * Constructor - Chạy router
+    /**Constructor - Chạy router
      */
     public function __construct() {
         // Parse URL
@@ -28,15 +27,6 @@ class App {
         // Xử lý routing
         $this->handleRouting($url);
     }
-    
-    /**
-     * Phân tích URL thành mảng
-     * 
-     * URL: /products/detail/5
-     * Return: ['products', 'detail', '5']
-     * 
-     * @return array
-     */
     protected function parseUrl() {
         if (isset($_GET['url'])) {
             // Lấy URL từ query string
@@ -61,17 +51,13 @@ class App {
      * @param array $url
      */
     protected function handleRouting($url) {
-        // =============================================
         // TRƯỜNG HỢP 1: TRANG CHỦ (/)
-        // =============================================
        if (empty($url)) {
         $this->callController('HomeController', 'index', []);
         return;
     }
-        
-        // =============================================
+
         // TRƯỜNG HỢP 2: /auth/login, /auth/register
-        // =============================================
         if ($url[0] === 'auth') {
             $this->controller = 'AuthController';
             
@@ -87,9 +73,7 @@ class App {
             return;
         }
         
-        // =============================================
         // TRƯỜNG HỢP 3: /admin/* (ADMIN ROUTES)
-        // =============================================
         if ($url[0] === 'admin') {
             $this->controller = 'AdminController';
             
@@ -109,9 +93,7 @@ class App {
             return;
         }
         
-        // =============================================
         // TRƯỜNG HỢP 4: /warehouse/* (WAREHOUSE ROUTES)
-        // =============================================
         if ($url[0] === 'warehouse') {
             $this->controller = 'WarehouseController';
             
@@ -130,9 +112,7 @@ class App {
             return;
         }
         
-        // =============================================
         // TRƯỜNG HỢP 5: /products, /cart, /checkout... (CUSTOMER ROUTES)
-        // =============================================
         
         // Danh sách các controllers cho khách hàng
         $customerControllers = [
@@ -162,9 +142,7 @@ class App {
             return;
         }
         
-        // =============================================
         // TRƯỜNG HỢP 6: 404 NOT FOUND
-        // =============================================
         $this->show404();
     }
     

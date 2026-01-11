@@ -161,7 +161,8 @@ class Warehouse extends Model
                 sp.Gia_tien AS Gia_hien_tai,
                 ct.So_luong,
                 ct.Don_gia_nhap,
-                ct.Thanh_tien
+                ct.Thanh_tien,
+                ct.Ngay_het_han
             FROM chi_tiet_phieu_nhap ct
             LEFT JOIN san_pham sp ON sp.ID_sp = ct.ID_sp
             WHERE ct.ID_phieu_nhap = ?
@@ -198,8 +199,8 @@ class Warehouse extends Model
 
             $sql2 = "
                 INSERT INTO chi_tiet_phieu_nhap
-                (ID_phieu_nhap, ID_sp, Ten_sp, Don_vi_tinh, Xuat_xu, Nha_cung_cap, So_luong, Don_gia_nhap, Thanh_tien)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (ID_phieu_nhap, ID_sp, Ten_sp, Don_vi_tinh, Xuat_xu, Nha_cung_cap, So_luong, Don_gia_nhap, Thanh_tien, Ngay_het_han)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
             
             // Query update tồn kho
@@ -210,16 +211,18 @@ class Warehouse extends Model
                 $tenSp  = trim($it['Ten_sp'] ?? '');
                 $dvt    = trim($it['Don_vi_tinh'] ?? 'SP');
                 $xx     = trim($it['Xuat_xu'] ?? '');
-                $ncc    = trim($it['Nha_cung_cap'] ?? '');
+                $ncc    = trim($it['Nha_cung_cap'] ?? $it['Ten_ncc'] ?? '');
                 $sl     = (int)($it['So_luong'] ?? 0);
                 $dg     = (float)($it['Don_gia_nhap'] ?? 0);
                 $tt     = $sl * $dg;
+                $hsd    = trim($it['Han_su_dung'] ?? '');
+                $hsd    = $hsd !== '' ? $hsd : null; // Cho phép NULL nếu không có
 
                 if ($idSp <= 0 || $tenSp === '' || $sl <= 0) {
                     throw new Exception('Dòng sản phẩm không hợp lệ');
                 }
 
-                $this->db->query($sql2, [$id, $idSp, $tenSp, $dvt, $xx, $ncc, $sl, $dg, $tt]);
+                $this->db->query($sql2, [$id, $idSp, $tenSp, $dvt, $xx, $ncc, $sl, $dg, $tt, $hsd]);
                 
                 // Cập nhật tồn kho - ĐÃ XỬ LÝ BỞI TRIGGER `trg_nhap_kho_tang_ton`
                 // Không update PHP để tránh cộng dồn 2 lần

@@ -95,6 +95,11 @@
           </div>
         </div>
 
+        <div class="wh-field">
+          <label>Hạn sử dụng <span style="color: #ef4444;">*</span></label>
+          <input id="wh-add-expiry" type="date">
+        </div>
+
         <button class="wh-btn wh-btn-success" type="button" onclick="addLine()">+ Thêm vào danh sách</button>
       </div>
     </div>
@@ -111,13 +116,14 @@
             <th>DANH MỤC</th>
             <th>SỐ LƯỢNG</th>
             <th>GIÁ NHẬP</th>
+            <th>HẠN SỬ DỤNG</th>
             <th>THÀNH TIỀN</th>
             <th></th>
           </tr>
         </thead>
         <tbody id="wh-add-lines">
           <tr>
-            <td colspan="8" class="wh-empty">Chưa có sản phẩm</td>
+            <td colspan="9" class="wh-empty">Chưa có sản phẩm</td>
           </tr>
         </tbody>
       </table>

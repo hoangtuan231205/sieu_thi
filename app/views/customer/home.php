@@ -32,7 +32,7 @@
                             <p class="hero-desc">
                                 Thực phẩm tươi sống, chất lượng cao từ các nông trại uy tín
                             </p>
-                            <a href="<?= BASE_URL ?>/products?category=2" class="btn btn-woodland btn-lg">
+                            <a href="<?= BASE_URL ?>/products?category=5" class="btn btn-woodland btn-lg">
                                 Mua ngay
                                 <i class="fas fa-arrow-right ms-2"></i>
                             </a>
@@ -72,7 +72,7 @@
                             <p class="hero-desc">
                                 Nguồn gốc rõ ràng, đảm bảo vệ sinh an toàn thực phẩm
                             </p>
-                            <a href="<?= BASE_URL ?>/products?category=5" class="btn btn-woodland btn-lg">
+                            <a href="<?= BASE_URL ?>/products?category=17" class="btn btn-woodland btn-lg">
                                 Xem sản phẩm
                                 <i class="fas fa-arrow-right ms-2"></i>
                             </a>

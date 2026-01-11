@@ -805,9 +805,71 @@ function updateQuantity(cartId, change) {
 
 document.getElementById('checkoutForm')?.addEventListener('submit', function(e) {
     const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    
+    // Kiểm tra các trường bắt buộc TRƯỚC khi hiện loading
+    const nameField = this.querySelector('input[name="receiver_name"]');
+    const phoneField = this.querySelector('input[name="receiver_phone"]');
+    const addressField = this.querySelector('input[name="receiver_address"]');
+    
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Xóa các lỗi cũ
+    this.querySelectorAll('.field-error').forEach(el => el.remove());
+    this.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+    
+    // Kiểm tra Họ tên
+    if (!nameField.value.trim() || nameField.value.trim().length < 3) {
+        isValid = false;
+        showFieldError(nameField, 'Vui lòng nhập họ tên (tối thiểu 3 ký tự)');
+    }
+    
+    // Kiểm tra Số điện thoại
+    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    if (!phoneField.value.trim()) {
+        isValid = false;
+        showFieldError(phoneField, 'Vui lòng nhập số điện thoại');
+    } else if (!phonePattern.test(phoneField.value.trim().replace(/\s/g, ''))) {
+        isValid = false;
+        showFieldError(phoneField, 'Số điện thoại không hợp lệ');
+    }
+    
+    // Kiểm tra Địa chỉ
+    if (!addressField.value.trim() || addressField.value.trim().length < 10) {
+        isValid = false;
+        showFieldError(addressField, 'Vui lòng nhập địa chỉ đầy đủ (tối thiểu 10 ký tự)');
+    }
+    
+    // Nếu không hợp lệ, dừng lại và không xoay loading
+    if (!isValid) {
+        e.preventDefault();
+        // Cuộn đến lỗi đầu tiên
+        const firstError = this.querySelector('.field-error');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return false;
+    }
+    
+    // Chỉ hiện loading khi form hợp lệ
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 });
+
+// Helper function hiển thị lỗi cho field
+function showFieldError(field, message) {
+    const wrapper = field.closest('.input-wrapper');
+    field.classList.add('input-error');
+    wrapper.style.borderColor = '#ef4444';
+    
+    // Thêm thông báo lỗi
+    const errorEl = document.createElement('span');
+    errorEl.className = 'field-error';
+    errorEl.style.cssText = 'color: #ef4444; font-size: 12px; margin-top: 4px; display: block;';
+    errorEl.textContent = message;
+    field.closest('.form-group').appendChild(errorEl);
+}
 </script>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

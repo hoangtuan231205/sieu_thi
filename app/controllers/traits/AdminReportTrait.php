@@ -183,31 +183,12 @@ trait AdminReportTrait {
             $params[] = $categoryId;
         }
         
-        // FIX: Loại trừ các lô hàng đang nằm trong phiếu hủy CHỜ DUYỆT
-        // User yêu cầu: "Chỉ được hủy 1 lần thôi" -> Nếu đã tạo phiếu hủy rồi thì ẩn đi
-        // 
-        // LOGIC LOẠI TRỪ:
-        // 1. Loại trừ theo ID_lo_nhap (lô cụ thể đã được chọn hủy)
-        // 2. Loại trừ theo ID_sp nếu phiếu hủy có ID_lo_nhap = NULL (hủy toàn bộ sản phẩm)
-        
-        // Điều kiện 1: Loại trừ lô cụ thể đã có trong phiếu hủy (chờ duyệt HOẶC đã duyệt)
-        // Chỉ khi từ chối (tu_choi) mới hiện lại
         $sql .= " AND ct.ID_chi_tiet_nhap NOT IN (
                     SELECT cth.ID_lo_nhap 
                     FROM chi_tiet_phieu_huy cth 
                     JOIN phieu_huy ph ON cth.ID_phieu_huy = ph.ID_phieu_huy 
                     WHERE ph.Trang_thai IN ('cho_duyet', 'da_duyet')
                     AND cth.ID_lo_nhap IS NOT NULL
-                  )";
-        
-        // Điều kiện 2: Loại trừ sản phẩm đã có phiếu hủy (với ID_lo_nhap = NULL)
-        // Trường hợp này là khi user tạo phiếu hủy không chọn lô cụ thể
-        $sql .= " AND p.ID_sp NOT IN (
-                    SELECT cth.ID_sp 
-                    FROM chi_tiet_phieu_huy cth 
-                    JOIN phieu_huy ph ON cth.ID_phieu_huy = ph.ID_phieu_huy 
-                    WHERE ph.Trang_thai IN ('cho_duyet', 'da_duyet')
-                    AND cth.ID_lo_nhap IS NULL
                   )";
         
         $sql .= " ORDER BY ct.Ngay_het_han ASC";

@@ -256,7 +256,7 @@
                             $price = ($batch['So_luong_con'] > 0) ? round($batch['Gia_tri_ton'] / $batch['So_luong_con']) : 0;
                             $params = http_build_query([
                                 'product_id' => $batch['ID_sp'],
-                                'batch_id' => $batch['ID_lo_hang'] ?? '',
+                                'batch_id' => $batch['ID_chi_tiet_nhap'] ?? '',
                                 'batch_code' => $batch['Ma_phieu_nhap'] ?? '',
                                 'quantity' => $batch['So_luong_con'],
                                 'price' => $price,

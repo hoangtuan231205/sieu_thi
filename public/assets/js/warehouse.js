@@ -143,6 +143,7 @@ function clearAddPick() {
   document.getElementById('wh-add-dvt').value = '';
   document.getElementById('wh-add-qty').value = 1;
   document.getElementById('wh-add-price').value = 0;
+  document.getElementById('wh-add-expiry').value = '';
   addSelected = null;
 }
 
@@ -161,10 +162,12 @@ async function addLine() {
   const supplierText = document.getElementById('wh-add-supplier').selectedOptions[0]?.text || '';
   const categoryId = document.getElementById('wh-add-category').value;
   const categoryText = document.getElementById('wh-add-category').selectedOptions[0]?.text || '';
+  const expiryDate = document.getElementById('wh-add-expiry').value;
 
   // Validation: Kiểm tra nhà cung cấp và danh mục
   if (!supplierId) return alert('Vui lòng chọn nhà cung cấp');
   if (!categoryId) return alert('Vui lòng chọn danh mục');
+  if (!expiryDate) return alert('Vui lòng chọn hạn sử dụng');
 
   // =====================================================================
   // SENIOR UPGRADE: Nếu chưa chọn sản phẩm từ gợi ý → tự động tạo mới
@@ -222,7 +225,8 @@ async function addLine() {
     ID_ncc: supplierId,
     Ten_ncc: supplierText,
     Danh_muc: categoryId,
-    Ten_danh_muc: categoryText
+    Ten_danh_muc: categoryText,
+    Han_su_dung: expiryDate
   });
 
   clearAddPick();
@@ -237,7 +241,7 @@ function renderAddLines() {
   const total = document.getElementById('wh-add-total');
 
   if (!addLines.length) {
-    tb.innerHTML = `<tr><td colspan="8" class="wh-empty">Chưa có sản phẩm</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="9" class="wh-empty">Chưa có sản phẩm</td></tr>`;
     total.textContent = money(0);
     return;
   }
@@ -255,6 +259,7 @@ function renderAddLines() {
         <td>${x.Ten_danh_muc || '-'}</td>
         <td>${x.So_luong}</td>
         <td>${money(x.Don_gia_nhap)}</td>
+        <td>${x.Han_su_dung || '-'}</td>
         <td class="wh-bold">${money(t)}</td>
         <td><button type="button" class="wh-icon wh-danger"
             onclick="addLines.splice(${i},1);renderAddLines()">🗑</button></td>
@@ -329,7 +334,8 @@ async function loadEdit(id) {
     Don_vi_tinh: x.Don_vi_tinh || 'SP',
     Gia_hien_tai: Number(x.Gia_hien_tai || 0),
     So_luong: Number(x.So_luong || 1),
-    Don_gia_nhap: Number(x.Don_gia_nhap || 0)
+    Don_gia_nhap: Number(x.Don_gia_nhap || 0),
+    Ngay_het_han: x.Ngay_het_han || ''
   }));
 
   editLineIndex = null;
@@ -400,7 +406,7 @@ function renderEditLines() {
   const total = document.getElementById('wh-edit-total');
 
   if (!editLines.length) {
-    tb.innerHTML = `<tr><td colspan="7" class="wh-empty">Chưa có sản phẩm</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="8" class="wh-empty">Chưa có sản phẩm</td></tr>`;
     total.textContent = money(0);
     return;
   }
@@ -417,6 +423,7 @@ function renderEditLines() {
         <td>${money(x.Gia_hien_tai || 0)}</td>
         <td>${x.So_luong}</td>
         <td>${money(x.Don_gia_nhap)}</td>
+        <td>${x.Ngay_het_han || '-'}</td>
         <td class="wh-bold">${money(t)}</td>
         <td>
           <button type="button" class="wh-icon wh-edit" title="Sửa" onclick="pickEditLine(${i})">✏️</button>
