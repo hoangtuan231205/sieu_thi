@@ -438,6 +438,24 @@ function getStatusLabel($status) {
 
         <!-- Right Column: Customer & Timeline -->
         <div class="right-col">
+            <!-- Update Status Card -->
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <i class="fas fa-cog text-secondary"></i> Cập nhật trạng thái
+                </div>
+                <div class="form-group mb-3">
+                    <select id="orderStatus" class="form-select">
+                        <option value="dang_xu_ly" <?= $order['Trang_thai']=='dang_xu_ly'?'selected':'' ?>>Đang xử lý</option>
+                        <option value="dang_giao" <?= $order['Trang_thai']=='dang_giao'?'selected':'' ?>>Đang giao hàng</option>
+                        <option value="da_giao" <?= $order['Trang_thai']=='da_giao'?'selected':'' ?>>Đã giao thành công</option>
+                        <option value="huy" <?= $order['Trang_thai']=='huy'?'selected':'' ?>>Hủy đơn hàng</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary w-100" onclick="updateStatus()">
+                    <i class="fas fa-save me-2"></i> Cập nhật
+                </button>
+            </div>
+
             <!-- Customer Info -->
             <div class="card-custom">
                 <div class="card-title-custom">
@@ -509,6 +527,54 @@ function getStatusLabel($status) {
         </div>
     </div>
 </div>
+
+<script>
+    const baseUrl = '<?= BASE_URL ?>';
+    const orderId = <?= $order['ID_dh'] ?>;
+
+    function updateStatus() {
+        const newStatus = document.getElementById('orderStatus').value;
+        const btn = document.querySelector('button[onclick="updateStatus()"]');
+        const originalText = btn.innerHTML;
+        
+        if (newStatus === 'huy' && !confirm('Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này sẽ hoàn lại tồn kho.')) {
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+        const formData = new FormData();
+        formData.append('order_id', orderId);
+        formData.append('status', newStatus);
+        formData.append('csrf_token', '<?= Session::getCsrfToken() ?>');
+
+        fetch(baseUrl + '/admin/order-update-status', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Cập nhật trạng thái thành công!');
+                location.reload();
+            } else {
+                alert(data.message || 'Có lỗi xảy ra');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi kết nối đến máy chủ');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+    }
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 

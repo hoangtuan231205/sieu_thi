@@ -242,21 +242,21 @@ private function addToCartWithLock($userId, $productId, $product, $quantity) {
                 
                 $this->logger->info("Updated cart item {$existingItem['ID_gio']} for user $userId");
                 
-                return $this->json([
+                return [
                     'success' => true,
                     'message' => 'Đã cập nhật số lượng trong giỏ hàng',
                     'cart_count' => $cartCount
-                ]);
+                ];
                 
             } else {
                 // Sản phẩm mới → kiểm tra số lượng
                 if ($quantity > $lockedProduct['So_luong_ton']) {
                     $db->rollBack();
-                    return $this->json([
+                    return [
                         'success' => false,
                         'message' => "Chỉ còn {$lockedProduct['So_luong_ton']} sản phẩm trong kho",
                         'max_quantity' => $lockedProduct['So_luong_ton']
-                    ]);
+                    ];
                 }
                 
                 // Thêm vào giỏ
@@ -271,11 +271,11 @@ private function addToCartWithLock($userId, $productId, $product, $quantity) {
                 
                 $this->logger->info("Added product $productId to cart for user $userId");
                 
-                return $this->json([
+                return [
                     'success' => true,
                     'message' => 'Đã thêm vào giỏ hàng',
                     'cart_count' => $cartCount
-                ]);
+                ];
             }
             
         } catch (Exception $e) {
@@ -309,7 +309,7 @@ private function addToCartWithLock($userId, $productId, $product, $quantity) {
         $result = $this->cartModel->updateQuantity($existingItem['ID_gio'], $newQuantity);
         
         if ($result) {
-            // Cập nhật cart count trong session
+            // Cập nhật cart count trong session (unique items)
             $cartCount = $this->cartModel->getCartCount($userId);
             Session::setCartCount($cartCount);
             
@@ -647,8 +647,9 @@ private function addToCartWithLock($userId, $productId, $product, $quantity) {
             // ===== BƯỚC 4: LẤY VÀ VALIDATE INPUT =====
             $productId = (int)post('product_id', 0);
             
-            // CRITICAL: Force quantity = 1 (chỉ mua 1 sản phẩm)
-            $quantity = 1;
+            // CRITICAL FIX: Allow dynamic quantity from User Input, default to 1
+            $quantity = (int)post('quantity', 1);
+            if ($quantity < 1) $quantity = 1;
             
             // Validate product ID
             if (!$productId) {

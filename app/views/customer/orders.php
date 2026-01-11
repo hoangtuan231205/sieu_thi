@@ -290,6 +290,74 @@ $user = Session::get('user');
 
 .btn-track:hover {
     background: #2563eb;
+    color: white;
+}
+
+.btn-cancel {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.btn-cancel:hover {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+/* Tracking Modal Custom Styling */
+.tracking-item {
+    display: flex;
+    gap: 16px;
+    padding-bottom: 24px;
+    position: relative;
+}
+
+.tracking-item::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 20px;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+
+.tracking-item:last-child::before {
+    display: none;
+}
+
+.tracking-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #d1d5db;
+    border: 4px solid white;
+    z-index: 1;
+    margin-top: 4px;
+}
+
+.tracking-item.active .tracking-icon {
+    background: #496C2C;
+    box-shadow: 0 0 0 4px #e8f0e3;
+}
+
+.tracking-info h5 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #1a1a1a;
+}
+
+.tracking-info p {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.tracking-date {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
 }
 
 /* ===== PAGINATION ===== */
@@ -456,12 +524,21 @@ $user = Session::get('user');
         </a>
         <a href="<?= BASE_URL ?>/orders?status=dang_giao" class="order-tab <?= ($filters['status'] ?? '') == 'dang_giao' ? 'active' : '' ?>">
             Đang giao
+            <?php if(($status_counts['dang_giao']??0) > 0): ?>
+                <span class="tab-count"><?= $status_counts['dang_giao'] ?></span>
+            <?php endif; ?>
         </a>
         <a href="<?= BASE_URL ?>/orders?status=da_giao" class="order-tab <?= ($filters['status'] ?? '') == 'da_giao' ? 'active' : '' ?>">
             Đã giao
+            <?php if(($status_counts['da_giao']??0) > 0): ?>
+                <span class="tab-count"><?= $status_counts['da_giao'] ?></span>
+            <?php endif; ?>
         </a>
         <a href="<?= BASE_URL ?>/orders?status=huy" class="order-tab <?= ($filters['status'] ?? '') == 'huy' ? 'active' : '' ?>">
             Trả hàng/Hủy đơn
+            <?php if(($status_counts['huy']??0) > 0): ?>
+                <span class="tab-count"><?= $status_counts['huy'] ?></span>
+            <?php endif; ?>
         </a>
     </div>
 
@@ -543,21 +620,17 @@ $user = Session::get('user');
 
                 <!-- Order Footer -->
                 <div class="order-card-footer">
-                    <?php if($order['Trang_thai'] == 'dang_giao'): ?>
-                        <button class="order-btn btn-track" onclick="alert('Tính năng đang phát triển')">
-                            Theo dõi đơn
+                    <!-- Hủy đơn: Chỉ cho phép khi đang xử lý -->
+                    <?php if($order['Trang_thai'] == 'dang_xu_ly'): ?>
+                        <button class="order-btn btn-cancel" onclick="confirmCancelOrder(<?= $order['ID_dh'] ?>)">
+                            <i class="fas fa-times"></i> Hủy đơn
                         </button>
                     <?php endif; ?>
-                    
-                    <?php if($order['Trang_thai'] == 'da_giao_hang'): ?>
-                        <button class="order-btn btn-reorder" onclick="alert('Tính năng đang phát triển')">
-                            Mua lại
-                        </button>
-                    <?php endif; ?>
-                    
-                    <a href="<?= BASE_URL ?>/orders/detail/<?= $order['ID_dh'] ?>" class="order-btn btn-detail">
-                        Chi tiết
-                    </a>
+
+                    <!-- Theo dõi đơn / Thông tin đơn -->
+                    <button class="order-btn btn-track" onclick="trackOrder(<?= $order['ID_dh'] ?>)">
+                        <i class="fas fa-search-location"></i> Theo dõi đơn
+                    </button>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -610,5 +683,131 @@ $user = Session::get('user');
         </div>
     <?php endif; ?>
 </div>
+
+<!-- Modal Theo dõi đơn -->
+<div class="modal fade" id="trackingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thông tin theo dõi đơn hàng #<span id="trackOrderId"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="trackingContent" class="py-2">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="viewFullDetail" class="btn btn-outline-success">Xem chi tiết đầy đủ</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận hủy -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Xác nhận hủy đơn hàng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                <p>Bạn có chắc chắn muốn hủy đơn hàng <strong>#<span id="cancelOrderIdText"></span></strong>?</p>
+                <p class="text-muted small">Quy trình này không thể hoàn tác sau khi thực hiện.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Không, giữ lại</button>
+                <button type="button" id="confirmCancelBtn" class="btn btn-danger">Đồng ý hủy đơn</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentCancelOrderId = null;
+
+function confirmCancelOrder(orderId) {
+    currentCancelOrderId = orderId;
+    document.getElementById('cancelOrderIdText').textContent = orderId;
+    const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+    modal.show();
+}
+
+document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+    if (!currentCancelOrderId) return;
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    
+    fetch('<?= BASE_URL ?>/orders/cancel/' + currentCancelOrderId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf_token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Hủy đơn hàng thất bại');
+            btn.disabled = false;
+            btn.textContent = 'Đồng ý hủy đơn';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra, vui lòng thử lại');
+        btn.disabled = false;
+        btn.textContent = 'Đồng ý hủy đơn';
+    });
+});
+
+function trackOrder(orderId) {
+    document.getElementById('trackOrderId').textContent = orderId;
+    document.getElementById('trackingContent').innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-2 text-muted">Đang tải thông tin...</p></div>';
+    document.getElementById('viewFullDetail').href = '<?= BASE_URL ?>/orders/detail/' + orderId;
+    
+    const modal = new bootstrap.Modal(document.getElementById('trackingModal'));
+    modal.show();
+    
+    fetch('<?= BASE_URL ?>/orders/track/' + orderId, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            let html = '<div class="tracking-list">';
+            data.timeline.forEach((item, index) => {
+                const isActive = item.completed ? 'active' : '';
+                html += `
+                    <div class="tracking-item ${isActive}">
+                        <div class="tracking-icon"></div>
+                        <div class="tracking-info">
+                            <h5>${item.label}</h5>
+                            <div class="tracking-date">${item.date || 'Chưa cập nhật'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            document.getElementById('trackingContent').innerHTML = html;
+        } else {
+            document.getElementById('trackingContent').innerHTML = '<div class="alert alert-warning">Không lấy được thông tin theo dõi.</div>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('trackingContent').innerHTML = '<div class="alert alert-danger">Có lỗi xảy ra khi tải dữ liệu.</div>';
+    });
+}
+</script>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

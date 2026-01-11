@@ -49,6 +49,10 @@ class WarehouseController extends Controller
 
         // Load danh sách nhà cung cấp cho dropdown
         $suppliers = $this->supplierModel->getForDropdown();
+        
+        // Load danh sách danh mục cho dropdown
+        $categoryModel = $this->model('Category');
+        $categories = $categoryModel->getAll();
 
         $data = [
             'page_title' => 'Quản Lý Phiếu Nhập',
@@ -57,6 +61,7 @@ class WarehouseController extends Controller
             'pagination' => $pagination,
             'total' => $total,
             'suppliers' => $suppliers,
+            'categories' => $categories,
             'csrf_token' => class_exists('Session') ? Session::getCsrfToken() : ''
         ];
 
@@ -66,15 +71,20 @@ class WarehouseController extends Controller
     /**
      * AJAX: search product
      * GET q
+     * Có hỗ trợ tiếng Việt: cá ≠ cải
      */
     public function searchProduct()
     {
-        if (!$this->isAjax())
-            $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        if (!$this->isAjax()) {
+            return $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        }
 
         $q = trim(get('q', ''));
-        if (mb_strlen($q) < 2) {
-            $this->json(['success' => true, 'products' => []]);
+        
+        // Cho phép query rỗng hoặc ngắn
+        if (mb_strlen($q) < 1) {
+            // Query rỗng - trả về rỗng (hoặc có thể trả về tất cả nếu muốn)
+            return $this->json(['success' => true, 'products' => []]);
         }
 
         // Nếu bạn có hàm sẵn trong Product model thì dùng
@@ -91,12 +101,12 @@ class WarehouseController extends Controller
                     'gia' => (float) ($p['Gia_tien'] ?? $p['gia'] ?? 0),
                 ];
             }
-            $this->json(['success' => true, 'products' => $out]);
+            return $this->json(['success' => true, 'products' => $out]);
         }
 
         // Fallback: search trong Warehouse model
         $products = $this->warehouseModel->searchProductsSimple($q, 20);
-        $this->json(['success' => true, 'products' => $products]);
+        return $this->json(['success' => true, 'products' => $products]);
     }
 
     /**
@@ -306,5 +316,85 @@ class WarehouseController extends Controller
 
 
 
+    /**
+     * AJAX: Tạo sản phẩm mới nhanh (khi tìm kiếm không ra)
+     * POST:
+     * - csrf_token
+     * - ten_sp (tên sản phẩm)
+     * - id_danh_muc (ID danh mục)
+     * - don_vi_tinh (đơn vị tính)
+     * - gia_ban (giá bán - mặc định 0)
+     * 
+     * Mã SP sẽ được trigger tự sinh
+     * Trả về: product info để fill vào form
+     */
+    public function createProductQuick()
+    {
+        if (!$this->isAjax() || !$this->isMethod('POST')) {
+            return $this->json(['success' => false, 'message' => 'Invalid request'], 400);
+        }
+
+        // CSRF check
+        if (class_exists('Middleware') && method_exists('Middleware', 'verifyCsrf')) {
+            if (!Middleware::verifyCsrf(post('csrf_token', ''))) {
+                return $this->json(['success' => false, 'message' => 'Invalid token'], 400);
+            }
+        }
+
+        $tenSp = trim(post('ten_sp', ''));
+        $danhMuc = (int)post('id_danh_muc', 0);
+        $donViTinh = trim(post('don_vi_tinh', 'Cái'));
+        $giaBan = (float)post('gia_ban', 0);
+
+        // Validate
+        if (empty($tenSp)) {
+            return $this->json(['success' => false, 'message' => 'Tên sản phẩm không được để trống'], 422);
+        }
+
+        if ($danhMuc <= 0) {
+            return $this->json(['success' => false, 'message' => 'Vui lòng chọn danh mục'], 422);
+        }
+
+        try {
+            // Set user ID for trigger
+            if (method_exists($this->productModel, 'setCurrentUserId')) {
+                $this->productModel->setCurrentUserId(Session::getUserId());
+            }
+
+            // Tạo sản phẩm mới - Mã SP sẽ được trigger tự sinh
+            $productData = [
+                'Ten' => $tenSp,
+                'ID_danh_muc' => $danhMuc,
+                'Don_vi_tinh' => $donViTinh,
+                'Gia_tien' => $giaBan,
+                'So_luong_ton' => 0, // Sẽ được cập nhật khi lưu phiếu nhập
+                'Trang_thai' => 'active'
+            ];
+
+            $productId = $this->productModel->create($productData);
+
+            if (!$productId) {
+                return $this->json(['success' => false, 'message' => 'Không thể tạo sản phẩm'], 500);
+            }
+
+            // Lấy thông tin SP vừa tạo (bao gồm mã tự sinh)
+            $newProduct = $this->productModel->findById($productId);
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Đã tạo sản phẩm mới',
+                'product' => [
+                    'id' => (int)$newProduct['ID_sp'],
+                    'ma' => $newProduct['Ma_hien_thi'] ?? 'SP' . str_pad($productId, 5, '0', STR_PAD_LEFT),
+                    'ten' => $newProduct['Ten'],
+                    'dvt' => $newProduct['Don_vi_tinh'],
+                    'gia' => (float)$newProduct['Gia_tien']
+                ]
+            ]);
+
+        } catch (Exception $e) {
+            return $this->json(['success' => false, 'message' => 'Lỗi: ' . $e->getMessage()], 500);
+        }
+    }
 
 }

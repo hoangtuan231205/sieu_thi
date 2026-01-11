@@ -1,7 +1,7 @@
 <?php
 /**
- * Warehouse Section Tabs Component
- * Include this at the top of: products.php, categories.php, warehouse pages, disposals.php
+ * Management Section Tabs Component
+ * Include this at the top of: orders.php, categories.php, suppliers.php
  */
 
 $currentUri = $_SERVER['REQUEST_URI'] ?? '';
@@ -56,16 +56,13 @@ if (!function_exists('isTabActive')) {
 </style>
 
 <div class="section-tabs">
-    <a href="<?= BASE_URL ?>/warehouse" class="tab-item <?= isTabActive('warehouse') ?>">
-        <i class="fas fa-truck-loading"></i> Phiếu nhập
+    <a href="<?= BASE_URL ?>/admin/orders" class="tab-item <?= isTabActive('orders') ?>">
+        <i class="fas fa-box-open"></i> Đơn hàng
     </a>
-    <a href="<?= BASE_URL ?>/admin/products" class="tab-item <?= isTabActive('products') ?>">
-        <i class="fas fa-box"></i> Sản phẩm
+    <a href="<?= BASE_URL ?>/admin/categories" class="tab-item <?= isTabActive('categories') ?>">
+        <i class="fas fa-layer-group"></i> Danh mục
     </a>
-    <a href="<?= BASE_URL ?>/admin/report-expiry" class="tab-item <?= isTabActive('report-expiry') ?>">
-        <i class="fas fa-calendar-xmark"></i> Cảnh báo hết hạn
-    </a>
-    <a href="<?= BASE_URL ?>/admin/disposals" class="tab-item <?= isTabActive('disposal') ?>">
-        <i class="fas fa-trash-can"></i> Phiếu hủy
+    <a href="<?= BASE_URL ?>/admin/suppliers" class="tab-item <?= isTabActive('suppliers') ?>">
+        <i class="fas fa-handshake"></i> Nhà cung cấp
     </a>
 </div>

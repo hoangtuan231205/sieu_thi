@@ -172,7 +172,7 @@ class Warehouse extends Model
 
 
     /**
-     * CREATE import + details
+     * CREATE import + details + UPDATE STOCK
      * items[]:
      *  - ID_sp
      *  - Ten_sp
@@ -201,6 +201,9 @@ class Warehouse extends Model
                 (ID_phieu_nhap, ID_sp, Ten_sp, Don_vi_tinh, Xuat_xu, Nha_cung_cap, So_luong, Don_gia_nhap, Thanh_tien)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
+            
+            // Query update tồn kho
+            $sqlUpdateStock = "UPDATE san_pham SET So_luong_ton = So_luong_ton + ? WHERE ID_sp = ?";
 
             foreach ($items as $it) {
                 $idSp   = (int)($it['ID_sp'] ?? 0);
@@ -217,6 +220,10 @@ class Warehouse extends Model
                 }
 
                 $this->db->query($sql2, [$id, $idSp, $tenSp, $dvt, $xx, $ncc, $sl, $dg, $tt]);
+                
+                // Cập nhật tồn kho - ĐÃ XỬ LÝ BỞI TRIGGER `trg_nhap_kho_tang_ton`
+                // Không update PHP để tránh cộng dồn 2 lần
+                // $this->db->query($sqlUpdateStock, [$sl, $idSp]);
             }
 
             $this->db->commit();
@@ -232,6 +239,15 @@ class Warehouse extends Model
     {
         $this->db->beginTransaction();
         try {
+            // 1. Revert stock cũ (Trừ đi số lượng của phiếu cũ)
+            $oldDetails = $this->getImportDetails($id);
+            $sqlRevertStock = "UPDATE san_pham SET So_luong_ton = GREATEST(0, So_luong_ton - ?) WHERE ID_sp = ?";
+            
+            foreach ($oldDetails as $oldItem) {
+                $this->db->query($sqlRevertStock, [$oldItem['So_luong'], $oldItem['ID_sp']]);
+            }
+
+            // 2. Update phiếu nhập
             $tongTien = $this->calcTotal($items);
 
             $sql1 = "
@@ -241,13 +257,16 @@ class Warehouse extends Model
             ";
             $this->db->query($sql1, [$ngayNhap, $tongTien, $ghiChu, $id]);
 
+            // 3. Xóa chi tiết cũ
             $this->db->query("DELETE FROM chi_tiet_phieu_nhap WHERE ID_phieu_nhap = ?", [$id]);
 
+            // 4. Insert chi tiết mới & Cộng tồn kho mới
             $sql2 = "
                 INSERT INTO chi_tiet_phieu_nhap
                 (ID_phieu_nhap, ID_sp, Ten_sp, Don_vi_tinh, Xuat_xu, Nha_cung_cap, So_luong, Don_gia_nhap, Thanh_tien)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ";
+            $sqlAddStock = "UPDATE san_pham SET So_luong_ton = So_luong_ton + ? WHERE ID_sp = ?";
 
             foreach ($items as $it) {
                 $idSp   = (int)($it['ID_sp'] ?? 0);
@@ -264,6 +283,10 @@ class Warehouse extends Model
                 }
 
                 $this->db->query($sql2, [$id, $idSp, $tenSp, $dvt, $xx, $ncc, $sl, $dg, $tt]);
+                
+                // Cộng tồn kho mới - ĐÃ XỬ LÝ BỞI TRIGGER `trg_nhap_kho_tang_ton`
+                // Không update PHP để tránh cộng dồn 2 lần
+                // $this->db->query($sqlAddStock, [$sl, $idSp]);
             }
 
             $this->db->commit();
@@ -276,25 +299,59 @@ class Warehouse extends Model
     }
 
     /**
-     * Fallback search products (nếu không có Product->searchForWarehouse)
-     * Lưu ý: bạn chỉnh tên cột theo bảng san_pham của bạn nếu khác.
+     * Tìm kiếm sản phẩm cho phiếu nhập/hủy
+     * Có hỗ trợ tiếng Việt: cá ≠ cải, rau ≠ râu
+     * Tìm theo: Tên sản phẩm, Mã sản phẩm, Tên danh mục
      */
     public function searchProductsSimple($q, $limit = 20)
     {
+        $q = trim($q);
+        if (mb_strlen($q) < 1) return [];
+        
+        // Fetch more results for PHP filtering
+        $fetchLimit = max((int)$limit * 5, 100);
+        
+        // Include category name in search
         $sql = "
             SELECT
                 sp.ID_sp AS id,
                 sp.Ma_hien_thi AS ma,
                 sp.Ten AS ten,
                 sp.Don_vi_tinh AS dvt,
-                sp.Gia_tien AS gia
+                sp.Gia_tien AS gia,
+                dm.Ten_danh_muc AS danh_muc
             FROM san_pham sp
-            WHERE sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ?
+            LEFT JOIN danh_muc dm ON sp.ID_danh_muc = dm.ID_danh_muc
+            WHERE sp.Trang_thai = 'active' 
+              AND (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ? OR dm.Ten_danh_muc LIKE ?)
             ORDER BY sp.ID_sp DESC
             LIMIT ?
         ";
-        return $this->db->query($sql, ['%'.$q.'%', '%'.$q.'%', (int)$limit])->fetchAll();
-
+        
+        $searchTerm = '%' . $q . '%';
+        $results = $this->db->query($sql, [$searchTerm, $searchTerm, $searchTerm, $fetchLimit])->fetchAll();
+        
+        // Vietnamese diacritics filter - ACCURATE matching
+        $qLower = mb_strtolower($q, 'UTF-8');
+        $filtered = [];
+        
+        foreach ($results as $row) {
+            $tenLower = mb_strtolower($row['ten'] ?? '', 'UTF-8');
+            $maLower = mb_strtolower($row['ma'] ?? '', 'UTF-8');
+            $dmLower = mb_strtolower($row['danh_muc'] ?? '', 'UTF-8');
+            
+            // Check if keyword EXACTLY matches (accent-sensitive)
+            $matchTen = (mb_strpos($tenLower, $qLower, 0, 'UTF-8') !== false);
+            $matchMa = (mb_strpos($maLower, $qLower, 0, 'UTF-8') !== false);
+            $matchDm = (mb_strpos($dmLower, $qLower, 0, 'UTF-8') !== false);
+            
+            if ($matchTen || $matchMa || $matchDm) {
+                $filtered[] = $row;
+                if (count($filtered) >= $limit) break;
+            }
+        }
+        
+        return $filtered;
     }
 
     private function calcTotal($items)
@@ -312,13 +369,21 @@ class Warehouse extends Model
     {
         $this->db->beginTransaction();
         try {
-            // Xóa chi tiết trước
+            // 1. Trừ ngược tồn kho trước khi xóa
+            $oldDetails = $this->getImportDetails($id);
+            $sqlRevertStock = "UPDATE san_pham SET So_luong_ton = GREATEST(0, So_luong_ton - ?) WHERE ID_sp = ?";
+            
+            foreach ($oldDetails as $oldItem) {
+                $this->db->query($sqlRevertStock, [$oldItem['So_luong'], $oldItem['ID_sp']]);
+            }
+
+            // 2. Xóa chi tiết
             $this->db->query(
                 "DELETE FROM chi_tiet_phieu_nhap WHERE ID_phieu_nhap = ?",
                 [$id]
             );
 
-            // Xóa phiếu
+            // 3. Xóa phiếu
             $this->db->query(
                 "DELETE FROM phieu_nhap_kho WHERE ID_phieu_nhap = ?",
                 [$id]

@@ -59,7 +59,7 @@ define('DEBUG_MODE', true); // true: development, false: production
 // PATH CONFIG
 // =============================================================================
 
-define('ROOT_PATH', dirname(dirname(__DIR__)));
+define('ROOT_PATH', dirname(__DIR__));
 define('APP_PATH', ROOT_PATH . '/app');
 define('PUBLIC_PATH', ROOT_PATH . '/public');
 define('LOGS_PATH', ROOT_PATH . '/logs');
@@ -69,10 +69,12 @@ define('LOGS_PATH', ROOT_PATH . '/logs');
 // =============================================================================
 
 
-define('BASE_URL', 'http://localhost/sieu_thi/public');
+define('BASE_URL', 'http://localhost:81/sieu_thi/public');
 define('UPLOADS_DIR', BASE_URL . '/uploads');
 define('ASSETS_DIR', BASE_URL . '/assets');
 define('UPLOAD_PRODUCT_URL', ASSETS_DIR . '/img/products');
+define('UPLOAD_PRODUCT_PATH', PUBLIC_PATH . '/assets/img/products');
+
 
 // =============================================================================
 // DATABASE CONFIG

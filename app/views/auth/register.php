@@ -21,27 +21,26 @@ include __DIR__ . '/../layouts/header.php';
                     </div>
 
                     <!-- Error Message -->
-                    <?php if (isset($_SESSION['error'])): ?>
+                    <?php if (Session::hasFlash('error')): ?>
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-circle me-2"></i>
-                            <?= htmlspecialchars($_SESSION['error']) ?>
+                            <?= htmlspecialchars(Session::getFlash('error')) ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <?php unset($_SESSION['error']); ?>
                     <?php endif; ?>
 
                     <!-- Success Message -->
-                    <?php if (isset($_SESSION['success'])): ?>
+                    <?php if (Session::hasFlash('success')): ?>
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             <i class="fas fa-check-circle me-2"></i>
-                            <?= htmlspecialchars($_SESSION['success']) ?>
+                            <?= htmlspecialchars(Session::getFlash('success')) ?>
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <?php unset($_SESSION['success']); ?>
                     <?php endif; ?>
 
                     <!-- Form -->
                     <form method="POST" action="<?= BASE_URL ?>/auth/registerProcess" class="auth-form">
+                        <input type="hidden" name="csrf_token" value="<?= Session::getCsrfToken() ?>">
                         <!-- Name Input -->
                         <div class="form-group mb-3">
                             <label for="name" class="form-label">Họ và tên</label>

@@ -25,12 +25,6 @@
                 <h1 class="admin-page-title">Báo cáo Lãi/Lỗ</h1>
                 <p class="admin-page-subtitle">Phân tích doanh thu, chi phí và lợi nhuận kinh doanh</p>
             </div>
-            <div class="admin-header-actions">
-                <a href="<?= BASE_URL ?>/admin/export-profit-excel?date_from=<?= $date_from ?>&date_to=<?= $date_to ?>" class="btn-admin-primary">
-                    <i class="fas fa-download"></i>
-                    <span>Xuất báo cáo</span>
-                </a>
-            </div>
         </div>
         
         <!-- Filter Bar -->

@@ -1,0 +1,21 @@
+[2026-01-10 19:14:31] [INFO] [cart] User initiated buy now for product 11 (qty=1) {"user_id":1,"product_id":11}
+[2026-01-10 19:21:07] [INFO] [cart] User initiated buy now for product 10 (qty=1) {"user_id":1,"product_id":10}
+[2026-01-10 19:54:37] [INFO] [cart] Added product 25 to cart for user 1 
+[2026-01-10 19:54:39] [INFO] [cart] Updated cart item 38 for user 1 
+[2026-01-10 19:55:15] [INFO] [cart] Updated cart item 39 for user 1 
+[2026-01-10 20:05:15] [INFO] [cart] User initiated buy now for product 81 (qty=1) {"user_id":1,"product_id":81}
+[2026-01-10 20:05:56] [INFO] [cart] Added product 84 to cart for user 1 
+[2026-01-10 20:06:01] [INFO] [cart] Added product 86 to cart for user 1 
+[2026-01-10 20:07:10] [INFO] [cart] Added product 32 to cart for user 1 
+[2026-01-10 20:07:10] [INFO] [cart] Added product 33 to cart for user 1 
+[2026-01-10 20:07:16] [INFO] [cart] Added product 25 to cart for user 1 
+[2026-01-10 20:07:16] [INFO] [cart] User initiated buy now for product 26 (qty=1) {"user_id":1,"product_id":26}
+[2026-01-10 20:15:04] [INFO] [cart] Added product 51 to cart for user 1 
+[2026-01-10 20:15:05] [INFO] [cart] Updated cart item 48 for user 1 
+[2026-01-10 20:15:06] [INFO] [cart] Updated cart item 48 for user 1 
+[2026-01-10 21:01:24] [INFO] [cart] Added product 108 to cart for user 1 
+[2026-01-10 21:55:22] [INFO] [cart] Added product 110 to cart for user 1 
+[2026-01-10 21:55:37] [INFO] [cart] Added product 5 to cart for user 1 
+[2026-01-10 21:55:49] [INFO] [cart] Added product 13 to cart for user 1 
+[2026-01-10 21:56:06] [INFO] [cart] Removed cart item 40 for user 1 
+[2026-01-10 21:56:13] [INFO] [cart] Removed cart item 50 for user 1 

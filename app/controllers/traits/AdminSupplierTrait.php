@@ -26,7 +26,7 @@ trait AdminSupplierTrait {
      */
     public function suppliers() {
         // Nạp model Supplier
-        $supplierModel = new Supplier();
+        $supplierModel = $this->model('Supplier');
         
         // Bộ lọc
         $filters = [
@@ -67,7 +67,7 @@ trait AdminSupplierTrait {
             return;
         }
         
-        $supplierModel = new Supplier();
+        $supplierModel = $this->model('Supplier');
         $supplier = $supplierModel->getById($id);
         
         if ($supplier) {
@@ -97,7 +97,7 @@ trait AdminSupplierTrait {
             return;
         }
         
-        $supplierModel = new Supplier();
+        $supplierModel = $this->model('Supplier');
         $data = [
             'Ten_ncc' => $name,
             'Sdt' => $_POST['phone'] ?? null,
@@ -142,7 +142,7 @@ trait AdminSupplierTrait {
             return;
         }
         
-        $supplierModel = new Supplier();
+        $supplierModel = $this->model('Supplier');
         
         // Lấy data cũ để log
         $oldData = $supplierModel->getById($id);
@@ -190,7 +190,7 @@ trait AdminSupplierTrait {
             return;
         }
         
-        $supplierModel = new Supplier();
+        $supplierModel = $this->model('Supplier');
         
         // Lấy data cũ để log
         $oldData = $supplierModel->getById($id);

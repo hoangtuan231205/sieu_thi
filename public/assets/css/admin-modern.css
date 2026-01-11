@@ -116,6 +116,105 @@
     font-size: 16px;
 }
 
+/* ===== Accordion Menu Group ===== */
+.menu-group {
+    margin-bottom: 2px;
+}
+
+.menu-group-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+    font-size: 14px;
+    user-select: none;
+}
+
+.menu-group-toggle:hover {
+    background: var(--bg-hover);
+    color: var(--text-dark);
+}
+
+.menu-group.open .menu-group-toggle {
+    color: var(--primary);
+}
+
+.menu-group-toggle i:first-child {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.menu-group-toggle span {
+    flex: 1;
+}
+
+.menu-group-toggle .chevron {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+.menu-group.open .menu-group-toggle .chevron {
+    transform: rotate(90deg);
+}
+
+/* Submenu - FORCE VERTICAL */
+.submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+}
+
+.menu-group.open .submenu {
+    max-height: 500px !important;
+    margin-bottom: 8px;
+}
+
+.submenu-item {
+    display: flex !important;
+    width: 100% !important;
+    align-items: center !important;
+    gap: 10px;
+    padding: 10px 14px 10px 46px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 13px;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+    white-space: nowrap;
+    background: transparent;
+}
+
+.submenu-item i {
+    width: 16px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.submenu-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-dark);
+    text-decoration: none;
+}
+
+.submenu-item.active {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.submenu-item i {
+    width: 16px;
+    text-align: center;
+    font-size: 12px;
+}
+
 .sidebar-section-title {
     padding: 16px 14px 8px;
     font-size: 11px;
@@ -160,12 +259,57 @@
     margin: 2px 0 0;
 }
 
+/* ===== FIX SCROLL LAYOUT & COMPACT UI ===== */
+body,
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
 /* ===== Khu vực nội dung chính ===== */
 .main-modern {
     margin-left: 260px;
-    min-height: 100vh;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: var(--bg-page);
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
+
+/* ===== Compact Container ===== */
+.admin-modern-container,
+.dash-content {
+    max-width: 1200px;
+    /* Compact width */
+    margin: 0 auto;
+    padding: 20px;
+    width: 100%;
+}
+
+/* ===== Compact Table ===== */
+.modern-table th,
+.modern-table td,
+.admin-table th,
+.admin-table td {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+}
+
+/* ===== Compact Cards ===== */
+.stat-card,
+.chart-card,
+.admin-card {
+    padding: 16px !important;
+}
+
+.stat-card-value {
+    font-size: 24px !important;
+    margin-top: 4px !important;
+}
+
+
 
 /* ===== Header trên cùng ===== */
 .header-modern {
@@ -933,18 +1077,18 @@
 
 .admin-table th {
     padding: 12px 16px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-muted);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
     white-space: nowrap;
 }
 
 .admin-table td {
-    padding: 14px 16px;
-    font-size: 14px;
+    padding: 16px 16px;
+    font-size: 15px;
     color: var(--text-dark);
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
@@ -1031,7 +1175,7 @@
 }
 
 .admin-filter-bar label {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -1452,9 +1596,84 @@
     color: var(--success);
 }
 
-.stat-badge.danger {
-    color: var(--danger);
+/* ===== UTILITIES & MODALS ===== */
+.hidden {
+    display: none !important;
 }
+
+.d-none {
+    display: none !important;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    width: 95%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    position: relative;
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Fix z-index for sidebar to be below modal */
+.sidebar-modern {
+    z-index: 50;
+    /* Lower than modal 9999 */
+}
+
+/* Toast Notification */
+.alert-fixed {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    min-width: 300px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+
 
 .stat-badge.warning {
     color: var(--warning);

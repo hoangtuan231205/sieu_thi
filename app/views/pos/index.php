@@ -16,9 +16,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
     :root {
-        --primary: #496C2C;
-        --primary-dark: #3a5623;
-        --primary-light: #e8f0e3;
+        --primary: #7BC043;
+        --primary-dark: #5a9c30;
+        --primary-light: #f0f9eb;
         --secondary: #291D51;
         --background: #f6f8f6;
         --surface: #ffffff;
@@ -935,7 +935,7 @@
 <!-- Header -->
 <header class="pos-header">
     <div class="pos-header-left">
-        <a href="<?= BASE_URL ?>/public" class="btn-back" title="Quay lại">
+        <a href="<?= BASE_URL ?>" class="btn-back" title="Quay lại">
             <i class="fas fa-arrow-left"></i>
         </a>
         <div class="pos-logo">
@@ -1283,13 +1283,13 @@ function renderProducts(products) {
     const html = products.map(p => {
         let imgSrc = DEFAULT_IMG;
         if (p.Hinh_anh) {
-            imgSrc = p.Hinh_anh.startsWith('http') ? p.Hinh_anh : BASE_URL + '/public/assets/img/products/' + p.Hinh_anh;
+            imgSrc = p.Hinh_anh.startsWith('http') ? p.Hinh_anh : BASE_URL + '/assets/img/products/' + p.Hinh_anh;
         }
         
         return `
         <div class="product-card" data-id="${p.ID_sp}">
             <div class="product-image">
-                <img src="${imgSrc}" alt="${escapeHtml(p.Ten)}" loading="lazy" onerror="this.src='${DEFAULT_IMG}'">
+                <img src="${imgSrc}" alt="${escapeHtml(p.Ten)}" onerror="this.src='${DEFAULT_IMG}'">
                 <span class="stock-badge">Kho: ${p.So_luong_ton}</span>
             </div>
             <div class="product-name">${escapeHtml(p.Ten)}</div>

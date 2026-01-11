@@ -90,8 +90,8 @@ class Supplier {
         $nextNum = ($lastId['max_id'] ?? 0) + 1;
         $maHienThi = 'NCC-' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
         
-        $sql = "INSERT INTO {$this->table} (Ma_hien_thi, Ten_ncc, Dia_chi, Sdt, Email, Nguoi_lien_he, Mo_ta, Trang_thai)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO {$this->table} (Ma_hien_thi, Ten_ncc, Dia_chi, Sdt, Email, Nguoi_lien_he, Mo_ta, Trang_thai, Ngay_tao)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         
         $params = [
             $maHienThi,

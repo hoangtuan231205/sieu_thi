@@ -155,13 +155,16 @@ class Cart extends Model {
      */
     
     /**
-     * Đếm số items trong giỏ
+     * Đếm số items trong giỏ (tổng số lượng tất cả sản phẩm)
      * 
      * @param int $userId
      * @return int
      */
     public function getCartCount($userId) {
-        $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE ID_tk = ?";
+        $sql = "SELECT COALESCE(SUM(gh.So_luong), 0) as total 
+                FROM {$this->table} gh
+                JOIN san_pham sp ON gh.ID_sp = sp.ID_sp
+                WHERE gh.ID_tk = ? AND sp.Trang_thai = 'active'";
         $result = $this->db->query($sql, [$userId])->fetch();
         
         return (int) $result['total'];

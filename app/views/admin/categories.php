@@ -1,8 +1,8 @@
 <?php
 /**
  * ADMIN - QUẢN LÝ DANH MỤC
- * Modern Card Grid Layout - Adapted from Tailwind Template
- * Theme: #7BC043 (Lime Green)
+ * Standardized UI - Theme Woodland
+ * Reference: admin-modern.css
  */
 
 // Data from controller
@@ -41,146 +41,15 @@ function getCategoryIcon($name) {
 }
 ?>
 <?php include __DIR__ . '/layouts/header.php'; ?>
+<link rel="stylesheet" href="<?= asset('css/admin-modern.css') ?>">
 
 <style>
-/* ========================================
-   CATEGORIES PAGE - Card Grid Layout
-   ======================================== */
-
-.category-page {
-    padding: 24px;
-    background: #f8fafc;
-    min-height: calc(100vh - 60px);
-}
-
-.category-container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* Page Header */
-.category-header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    margin-bottom: 24px;
-}
-
-.category-header-text h1 {
-    font-size: 32px;
-    font-weight: 800;
-    color: #1e293b;
-    margin: 0 0 8px 0;
-    letter-spacing: -0.025em;
-}
-
-.category-header-text p {
-    font-size: 14px;
-    color: #64748b;
-    margin: 0;
-    max-width: 500px;
-}
-
-.btn-add-category {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: #1e293b;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);
-}
-
-.btn-add-category:hover {
-    background: #334155;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(30, 41, 59, 0.2);
-    color: white;
-}
-
-/* Search & Filter Bar */
-.category-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 20px;
-    margin-bottom: 24px;
-    border-bottom: 1px solid #e2e8f0;
-    flex-wrap: wrap;
-}
-
-.category-search {
-    position: relative;
-    flex: 1;
-    max-width: 320px;
-}
-
-.category-search i {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-}
-
-.category-search input {
-    width: 100%;
-    height: 44px;
-    padding: 0 14px 0 44px;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    font-size: 14px;
-    color: #1e293b;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.category-search input:focus {
-    outline: none;
-    border-color: #7BC043;
-    box-shadow: 0 0 0 3px rgba(123, 192, 67, 0.15);
-}
-
-.category-search input::placeholder {
-    color: #94a3b8;
-}
-
-.category-filter-btn {
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.category-filter-btn:hover {
-    border-color: #7BC043;
-    color: #7BC043;
-}
-
-/* Card Grid */
+/* Custom Grid Styles that extend admin-modern */
 .category-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 @media (max-width: 1200px) {
@@ -191,14 +60,12 @@ function getCategoryIcon($name) {
     .category-grid { grid-template-columns: 1fr; }
 }
 
-/* Category Card */
 .category-card {
     background: white;
-    border-radius: 16px;
+    border-radius: var(--border-radius);
     padding: 24px;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    transition: all 0.3s ease;
+    border: 1px solid var(--admin-border);
+    transition: all 0.2s ease;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -207,305 +74,101 @@ function getCategoryIcon($name) {
 }
 
 .category-card:hover {
-    box-shadow: 0 0 0 1px rgba(123, 192, 67, 0.3), 0 8px 24px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     transform: translateY(-2px);
+    border-color: var(--admin-primary);
 }
 
 .category-card.inactive {
-    opacity: 0.7;
+    opacity: 0.8;
     background: #fafafa;
 }
 
-.category-card-header {
+.category-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
     margin-bottom: 16px;
 }
 
-/* Icon Box */
-.category-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
+/* Icon Colors using variables where possible or custom matching */
+.category-icon.orange { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+.category-icon.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.category-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.category-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.category-icon.rose { background: rgba(244, 63, 94, 0.1); color: #f43f5e; }
+.category-icon.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+.category-icon.pink { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
+.category-icon.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.category-icon.cyan { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+.category-icon.amber { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
-.category-icon.orange { background: rgba(249, 115, 22, 0.1); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.2); }
-.category-icon.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-.category-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
-.category-icon.purple { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.2); }
-.category-icon.rose { background: rgba(244, 63, 94, 0.1); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.2); }
-.category-icon.yellow { background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.2); }
-.category-icon.pink { background: rgba(236, 72, 153, 0.1); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.2); }
-.category-icon.red { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-.category-icon.cyan { background: rgba(6, 182, 212, 0.1); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.2); }
-.category-icon.amber { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-
-/* Action Buttons */
-.category-actions {
-    display: flex;
-    gap: 4px;
-    opacity: 0;
-    transform: translateX(8px);
-    transition: all 0.2s ease;
-}
-
-.category-card:hover .category-actions {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.category-action-btn {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    color: #94a3b8;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-decoration: none;
-}
-
-.category-action-btn:hover {
-    background: #f1f5f9;
-}
-
-.category-action-btn.edit:hover { color: #7BC043; }
-.category-action-btn.delete:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
-
-/* Card Content */
-.category-card-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 8px 0;
-    transition: color 0.2s ease;
-}
-
-.category-card:hover .category-card-title {
-    color: #7BC043;
-}
-
-.category-card-desc {
-    font-size: 14px;
-    color: #64748b;
-    margin: 0 0 20px 0;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    flex-grow: 1;
-}
-
-/* Card Footer */
-.category-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 16px;
-    border-top: 1px solid #f1f5f9;
-    margin-top: auto;
-}
-
-.category-product-count {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    background: rgba(59, 130, 246, 0.1);
-    color: #2563eb;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.category-code {
-    font-size: 11px;
-    color: #94a3b8;
-    font-family: monospace;
-    margin-left: 8px;
-}
-
-.category-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.category-status .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.category-status.active { color: #16a34a; }
-.category-status.active .dot { background: #22c55e; }
-
-.category-status.inactive { color: #6b7280; }
-.category-status.inactive .dot { background: #9ca3af; }
-
-/* Add New Card */
 .category-card-add {
-    background: #fafafa;
-    border: 2px dashed #e2e8f0;
-    border-radius: 16px;
-    padding: 24px;
+    background: #f8fafc;
+    border: 2px dashed var(--admin-border);
+    border-radius: var(--border-radius);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 280px;
+    min-height: 250px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
+    color: var(--admin-text-light);
 }
 
 .category-card-add:hover {
-    border-color: #7BC043;
+    border-color: var(--admin-primary);
     background: rgba(123, 192, 67, 0.05);
-}
-
-.category-card-add .add-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    color: #94a3b8;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;
-}
-
-.category-card-add:hover .add-icon {
-    color: #7BC043;
-    transform: scale(1.1);
-}
-
-.category-card-add h4 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 4px 0;
-}
-
-.category-card-add:hover h4 {
-    color: #7BC043;
-}
-
-.category-card-add p {
-    font-size: 13px;
-    color: #94a3b8;
-    margin: 0;
-}
-
-/* Pagination */
-.category-pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 24px;
-    border-top: 1px solid #e2e8f0;
-}
-
-.category-pagination-info {
-    font-size: 14px;
-    color: #64748b;
-}
-
-.category-pagination-info strong {
-    color: #1e293b;
-    font-weight: 600;
-}
-
-.category-pagination-btns {
-    display: flex;
-    gap: 8px;
-}
-
-.category-page-btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    background: white;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-decoration: none;
-}
-
-.category-page-btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    color: #334155;
-}
-
-.category-page-btn.primary {
-    background: linear-gradient(135deg, #7BC043 0%, #5a9a32 100%);
-    border-color: #7BC043;
-    color: white;
-}
-
-.category-page-btn.primary:hover {
-    box-shadow: 0 4px 12px rgba(123, 192, 67, 0.3);
-}
-
-.category-page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    color: var(--admin-primary);
 }
 </style>
 
-<div class="category-page">
-    <div class="category-container">
+<div class="admin-modern">
+    <div class="admin-modern-container">
         <!-- Breadcrumb -->
-        <div class="admin-breadcrumb" style="margin-bottom: 8px;">
+        <div class="admin-breadcrumb">
             <a href="<?= BASE_URL ?>/">Trang chủ</a>
-            <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
-            <span>Kho hàng</span>
             <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
             <span class="current">Quản lý danh mục</span>
         </div>
         
-        <?php include __DIR__ . '/components/warehouse_tabs.php'; ?>
+        <?php include __DIR__ . '/components/management_tabs.php'; ?>
         
         <!-- Page Header -->
-        <div class="category-header">
-            <div class="category-header-text">
-                <h1>Danh Mục Sản Phẩm</h1>
-                <p>Quản lý và tổ chức danh mục hàng hóa của siêu thị. Cập nhật thông tin để tối ưu hóa tìm kiếm.</p>
+        <div class="admin-page-header">
+            <div>
+                <h1 class="admin-page-title">Danh Mục Sản Phẩm</h1>
+                <p class="admin-page-subtitle">Quản lý và tổ chức danh mục hàng hóa của siêu thị.</p>
             </div>
-            <a href="<?= BASE_URL ?>/admin/category-add" class="btn-add-category">
-                <i class="fas fa-plus"></i>
-                <span>Thêm danh mục</span>
-            </a>
+            <div class="admin-header-actions">
+                <a href="<?= BASE_URL ?>/admin/category-add" class="btn-admin-primary">
+                    <i class="fas fa-plus"></i>
+                    <span>Thêm danh mục</span>
+                </a>
+            </div>
         </div>
         
         <!-- Toolbar -->
-        <div class="category-toolbar">
-            <form method="GET" class="category-search">
-                <i class="fas fa-search"></i>
-                <input type="text" name="keyword" placeholder="Tìm kiếm danh mục..." value="<?= htmlspecialchars($filters['keyword'] ?? '') ?>">
-            </form>
-            <button class="category-filter-btn" title="Lọc">
-                <i class="fas fa-filter"></i>
-            </button>
+        <div class="admin-card mb-4" style="margin-bottom: 24px;">
+            <div class="admin-card-body">
+                <form method="GET" class="admin-filter-bar" style="justify-content: space-between;">
+                    <div class="form-group" style="flex: 1; max-width: 400px;">
+                        <div style="position: relative;">
+                            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-light);"></i>
+                            <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm danh mục..." 
+                                   value="<?= htmlspecialchars($filters['keyword'] ?? '') ?>"
+                                   style="padding-left: 36px;">
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
         
         <!-- Card Grid -->
@@ -518,31 +181,38 @@ function getCategoryIcon($name) {
                     $productCount = $cat['So_san_pham'] ?? $cat['product_count'] ?? 0;
                     ?>
                     <div class="category-card <?= $isActive ? '' : 'inactive' ?>">
-                        <div class="category-card-header">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="category-icon <?= $iconConfig[1] ?>">
                                 <i class="fas <?= $iconConfig[0] ?>"></i>
                             </div>
-                            <div class="category-actions">
-                                <a href="<?= BASE_URL ?>/admin/category-edit/<?= $cat['ID_danh_muc'] ?>" class="category-action-btn edit" title="Chỉnh sửa">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button onclick="deleteCategory(<?= $cat['ID_danh_muc'] ?>)" class="category-action-btn delete" title="Xóa">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                            <?php if ($isActive): ?>
+                                <span class="status-badge success">Hoạt động</span>
+                            <?php else: ?>
+                                <span class="status-badge normal">Tạm ẩn</span>
+                            <?php endif; ?>
                         </div>
                         
-                        <h3 class="category-card-title"><?= htmlspecialchars($cat['Ten_danh_muc']) ?></h3>
-                        <p class="category-card-desc"><?= htmlspecialchars($cat['Mo_ta'] ?? 'Chưa có mô tả') ?></p>
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">
+                            <?= htmlspecialchars($cat['Ten_danh_muc']) ?>
+                        </h3>
+                        <p style="font-size: 14px; color: var(--admin-text-muted); margin-bottom: 20px; flex-grow: 1; line-height: 1.5;">
+                            <?= htmlspecialchars($cat['Mo_ta'] ?? 'Chưa có mô tả') ?>
+                        </p>
                         
-                        <div class="category-card-footer">
-                            <div>
-                                <span class="category-product-count"><?= number_format($productCount) ?> SP</span>
-                                <span class="category-code">#CAT-<?= str_pad($cat['ID_danh_muc'], 3, '0', STR_PAD_LEFT) ?></span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--admin-border); padding-top: 16px; margin-top: auto;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="background: #eff6ff; color: #3b82f6; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                                    <?= number_format($productCount) ?> SP
+                                </span>
                             </div>
-                            <div class="category-status <?= $isActive ? 'active' : 'inactive' ?>">
-                                <span class="dot"></span>
-                                <?= $isActive ? 'Hoạt động' : 'Tạm ẩn' ?>
+                            
+                            <div style="display: flex; gap: 8px;">
+                                <a href="<?= BASE_URL ?>/admin/category-edit/<?= $cat['ID_danh_muc'] ?>" class="btn-icon" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button onclick="deleteCategory(<?= $cat['ID_danh_muc'] ?>)" class="btn-icon" style="color: var(--admin-danger);" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -551,47 +221,55 @@ function getCategoryIcon($name) {
             
             <!-- Add New Card -->
             <a href="<?= BASE_URL ?>/admin/category-add" class="category-card-add">
-                <div class="add-icon">
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                     <i class="fas fa-plus"></i>
                 </div>
-                <h4>Tạo danh mục mới</h4>
-                <p>Thêm danh mục sản phẩm vào kho</p>
+                <h4 style="font-weight: 700; margin-bottom: 4px;">Tạo danh mục mới</h4>
+                <p style="font-size: 13px; color: var(--admin-text-muted);">Thêm danh mục sản phẩm vào kho</p>
             </a>
         </div>
         
-        <!-- Pagination -->
+        <!-- Pagination inside Card is not suitable for Grid, so separate block -->
         <?php if (($pagination['last_page'] ?? 1) > 1): ?>
-        <div class="category-pagination">
-            <span class="category-pagination-info">
-                Hiển thị <strong><?= count($categories) ?></strong> / <?= $pagination['total'] ?? 0 ?> danh mục
-            </span>
-            <div class="category-pagination-btns">
-                <?php if (($pagination['current_page'] ?? 1) > 1): ?>
-                    <a href="?page=<?= ($pagination['current_page'] ?? 1) - 1 ?>" class="category-page-btn">Trước</a>
-                <?php else: ?>
-                    <button class="category-page-btn" disabled>Trước</button>
-                <?php endif; ?>
-                
-                <?php if (($pagination['current_page'] ?? 1) < ($pagination['last_page'] ?? 1)): ?>
-                    <a href="?page=<?= ($pagination['current_page'] ?? 1) + 1 ?>" class="category-page-btn primary">Sau</a>
-                <?php else: ?>
-                    <button class="category-page-btn primary" disabled>Sau</button>
-                <?php endif; ?>
+        <div class="admin-card">
+            <div class="admin-card-footer" style="border-top: none; display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 13px; color: var(--admin-text-muted);">
+                    Hiển thị <strong><?= count($categories) ?></strong> / <?= $pagination['total'] ?? 0 ?> danh mục
+                </div>
+                <div class="pagination">
+                    <?php if (($pagination['current_page'] ?? 1) > 1): ?>
+                        <a href="?page=<?= ($pagination['current_page'] ?? 1) - 1 ?>" class="page-link"><i class="fas fa-chevron-left"></i></a>
+                    <?php else: ?>
+                        <span class="page-link disabled"><i class="fas fa-chevron-left"></i></span>
+                    <?php endif; ?>
+                    
+                    <?php if (($pagination['current_page'] ?? 1) < ($pagination['last_page'] ?? 1)): ?>
+                        <a href="?page=<?= ($pagination['current_page'] ?? 1) + 1 ?>" class="page-link"><i class="fas fa-chevron-right"></i></a>
+                    <?php else: ?>
+                        <span class="page-link disabled"><i class="fas fa-chevron-right"></i></span>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
         <?php endif; ?>
+        
     </div>
 </div>
 
 <script>
+// Use existing global functions if any, otherwise define here
 function deleteCategory(id) {
     if (!confirm('Xóa danh mục này?\n\nLưu ý: Không thể xóa danh mục có sản phẩm hoặc danh mục con.')) return;
     
+    // Check if csrfToken is available globally or define strict
+    const token = '<?= Session::getCsrfToken() ?>'; // assuming we can access this or pass via JS
+    
+    // Using vanilla JS fetch
     const formData = new FormData();
     formData.append('category_id', id);
-    formData.append('csrf_token', csrfToken);
+    formData.append('csrf_token', token);
     
-    fetch(baseUrl + '/public/admin/category-delete', {
+    fetch('<?= BASE_URL ?>/admin/category-delete', { // Adjust if needed
         method: 'POST',
         body: formData,
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -599,11 +277,15 @@ function deleteCategory(id) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showNotification(data.message || 'Đã xóa danh mục', 'success');
-            setTimeout(() => location.reload(), 1000);
+            alert(data.message || 'Đã xóa danh mục');
+            location.reload();
         } else {
-            showNotification(data.message || 'Không thể xóa', 'error');
+            alert(data.message || 'Không thể xóa');
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Có lỗi xảy ra');
     });
 }
 </script>

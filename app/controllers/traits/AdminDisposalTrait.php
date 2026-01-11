@@ -25,8 +25,15 @@ trait AdminDisposalTrait {
      * 
      * URL: /admin/disposals
      */
+    /**
+     * ==========================================================================
+     * METHOD: disposals() - DANH SÁCH PHIẾU HỦY
+     * ==========================================================================
+     * 
+     * URL: /admin/disposals
+     */
     public function disposals() {
-        $disposalModel = new Disposal();
+        $disposalModel = $this->model('Disposal');
         
         // Bộ lọc
         $filters = [
@@ -70,7 +77,7 @@ trait AdminDisposalTrait {
     public function disposalAdd() {
         if (is_post()) {
             // Xử lý tạo phiếu hủy
-            $disposalModel = new Disposal();
+            $disposalModel = $this->model('Disposal');
             
             $disposalData = [
                 'Nguoi_tao' => $_SESSION['user_id'],
@@ -109,8 +116,41 @@ trait AdminDisposalTrait {
             return;
         }
         
+        // Pre-fill data from URL params (từ trang cảnh báo hết hạn)
+        $prefillProduct = null;
+        $prefillReason = '';
+        $prefillQuantity = 0;
+        $prefillBatchCode = '';
+        $prefillPrice = 0;
+        $prefillBatchId = 0;
+        
+        $productId = (int)get('product_id', 0);
+        if ($productId > 0) {
+            $product = $this->productModel->findById($productId);
+            if ($product) {
+                $prefillProduct = [
+                    'ID_sp' => $product['ID_sp'],
+                    'Ma_hien_thi' => $product['Ma_hien_thi'],
+                    'Ten' => $product['Ten'],
+                    'Don_vi_tinh' => $product['Don_vi_tinh'],
+                    'So_luong_ton' => $product['So_luong_ton']
+                ];
+                $prefillQuantity = (int)get('quantity', $product['So_luong_ton']);
+                $prefillReason = get('reason', '');
+                $prefillBatchCode = get('batch_code', '');
+                $prefillPrice = (int)get('price', 0);
+                $prefillBatchId = (int)get('batch_id', 0);
+            }
+        }
+        
         $data = [
-            'page_title' => 'Tạo phiếu hủy - Admin'
+            'page_title' => 'Tạo phiếu hủy - Admin',
+            'prefill_product' => $prefillProduct,
+            'prefill_quantity' => $prefillQuantity,
+            'prefill_reason' => $prefillReason,
+            'prefill_batch_code' => $prefillBatchCode,
+            'prefill_price' => $prefillPrice,
+            'prefill_batch_id' => $prefillBatchId
         ];
         
         $this->view('admin/disposal_add', $data);
@@ -129,7 +169,7 @@ trait AdminDisposalTrait {
             return;
         }
         
-        $disposalModel = new Disposal();
+        $disposalModel = $this->model('Disposal');
         $disposal = $disposalModel->getDisposalById($id);
         
         if (!$disposal) {
@@ -165,7 +205,7 @@ trait AdminDisposalTrait {
         }
         
         $id = post('disposal_id');
-        $disposalModel = new Disposal();
+        $disposalModel = $this->model('Disposal');
         
         // Lấy data cũ để log
         $oldData = $disposalModel->getDisposalById($id);
@@ -203,7 +243,7 @@ trait AdminDisposalTrait {
         
         $id = post('id');
         $reason = post('reason', '');
-        $disposalModel = new Disposal();
+        $disposalModel = $this->model('Disposal');
         
         $result = $disposalModel->reject($id, $_SESSION['user_id'], $reason);
         

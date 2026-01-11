@@ -453,5 +453,80 @@ class CheckoutController extends Controller {
         } catch (Exception $e) {
             return $this->json(['success' => false, 'message' => 'Có lỗi xảy ra']);
         }
+        }
+    
+        /**
+     * METHOD: updateCartQuantity() - CẬP NHẬT SỐ LƯỢNG KHI CHECKOUT TỪ GIỎ (AJAX)
+     * Đảm bảo tính toán lại chỉ cho các item đang selected
+     */
+    public function updateCartQuantity() {
+        try {
+            if (!$this->isAjax() || !$this->isMethod('POST')) {
+                return $this->json(['error' => 'Invalid request'], 400);
+            }
+            
+            $userId = Session::getUserId();
+            $cartId = (int)post('cart_id');
+            $quantity = (int)post('quantity', 1);
+            $selectedIds = post('selected_ids', ''); // DS ID đang checkout
+            
+            if ($quantity < 1) $quantity = 1;
+            
+            // 1. Cập nhật vào DB
+            $cartItem = $this->cartModel->getCartItemById($cartId);
+            if (!$cartItem || $cartItem['ID_tk'] != $userId) {
+                return $this->json(['success' => false, 'message' => 'Lỗi quyền truy cập']);
+            }
+            
+            $product = $this->productModel->findById($cartItem['ID_sp']);
+            if ($quantity > $product['So_luong_ton']) {
+                return $this->json([
+                    'success' => false, 
+                    'message' => "Chỉ còn {$product['So_luong_ton']} sản phẩm"
+                ]);
+            }
+            
+            $this->cartModel->updateQuantity($cartId, $quantity);
+            
+            // 2. Tính lại tổng tiền dựa trên Selected IDs
+            $cartItems = [];
+            $idsArray = !empty($selectedIds) ? explode(',', $selectedIds) : [];
+            
+            if (!empty($idsArray)) {
+                $cartItems = $this->cartModel->getCartItemsByIds($userId, $idsArray);
+            } else {
+                // Nếu không có selected_ids, giả định là checkout toàn bộ (fallback)
+                $cartItems = $this->cartModel->getCartItems($userId);
+            }
+            
+            $subtotal = 0;
+            $itemTotal = 0;
+            
+            foreach ($cartItems as $item) {
+                $subtotal += $item['Thanh_tien'];
+                if ($item['ID_gio'] == $cartId) {
+                    $itemTotal = $item['Thanh_tien'];
+                }
+            }
+            
+            $shippingFee = ($subtotal >= 150000) ? 0 : 20000;
+            $total = $subtotal + $shippingFee;
+            
+            return $this->json([
+                'success' => true,
+                'message' => 'Đã cập nhật',
+                'item_total' => $itemTotal,
+                'item_total_formatted' => formatPrice($itemTotal),
+                'subtotal' => $subtotal,
+                'subtotal_formatted' => formatPrice($subtotal),
+                'shipping_fee' => $shippingFee,
+                'shipping_fee_formatted' => ($shippingFee == 0) ? 'Miễn phí' : formatPrice($shippingFee),
+                'total' => $total,
+                'total_formatted' => formatPrice($total)
+            ]);
+            
+        } catch (Exception $e) {
+            return $this->json(['success' => false, 'message' => 'Có lỗi xảy ra']);
+        }
     }
 }

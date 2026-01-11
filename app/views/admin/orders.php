@@ -13,15 +13,15 @@
         <div class="admin-breadcrumb">
             <a href="<?= BASE_URL ?>/">Trang chủ</a>
             <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
-            <span class="current">Quản lý đơn hàng</span>
+            <span class="current">Quản lý vận chuyển</span>
         </div>
         
-        <?php include __DIR__ . '/components/sales_tabs.php'; ?>
+        <?php include __DIR__ . '/components/management_tabs.php'; ?>
         
         <!-- Page Header -->
         <div class="admin-page-header">
             <div>
-                <h1 class="admin-page-title">Quản lý Đơn hàng</h1>
+                <h1 class="admin-page-title">Quản lý vận chuyển</h1>
                 <p class="admin-page-subtitle">Theo dõi và xử lý các đơn hàng từ khách hàng</p>
             </div>
             <div class="admin-header-actions">

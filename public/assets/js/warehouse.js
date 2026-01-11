@@ -89,7 +89,8 @@ function bindSearch(inputId, boxId, callback) {
     const q = document.getElementById(inputId).value.trim();
     const box = document.getElementById(boxId);
 
-    if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    // Cho phép query từ 1 ký tự (để hỗ trợ tiếng Việt như "cá", "sữa")
+    if (q.length < 1) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
     const json = await getJSON(`${WH_BASE}/warehouse/search-product?q=${encodeURIComponent(q)}`);
     if (!json.success || !json.products || !json.products.length) {
@@ -147,14 +148,13 @@ function clearAddPick() {
 
 bindSearch('wh-add-q', 'wh-add-suggest', p => {
   addSelected = p;
+  document.getElementById('wh-add-q').value = p.Ten_sp; // Điền tên sản phẩm vào ô tìm kiếm
   document.getElementById('wh-add-ma').value = p.Ma;
   document.getElementById('wh-add-dvt').value = p.Don_vi_tinh;
   document.getElementById('wh-add-price').value = p.Gia_hien_tai;
 });
 
-function addLine() {
-  if (!addSelected) return alert('Chưa chọn sản phẩm');
-
+async function addLine() {
   const qty = Math.max(1, parseInt(document.getElementById('wh-add-qty').value || '1', 10));
   const price = Math.max(0, parseFloat(document.getElementById('wh-add-price').value || '0'));
   const supplierId = document.getElementById('wh-add-supplier').value;
@@ -166,6 +166,52 @@ function addLine() {
   if (!supplierId) return alert('Vui lòng chọn nhà cung cấp');
   if (!categoryId) return alert('Vui lòng chọn danh mục');
 
+  // =====================================================================
+  // SENIOR UPGRADE: Nếu chưa chọn sản phẩm từ gợi ý → tự động tạo mới
+  // =====================================================================
+  if (!addSelected) {
+    const tenSpNhap = document.getElementById('wh-add-q').value.trim();
+
+    if (!tenSpNhap) {
+      return alert('Vui lòng nhập tên sản phẩm');
+    }
+
+    // Gọi API tạo sản phẩm mới
+    try {
+      const dvt = document.getElementById('wh-add-dvt').value || 'Cái';
+
+      const result = await postJSON(`${WH_BASE}/warehouse/create-product-quick`, {
+        csrf_token: WH_CSRF || '',
+        ten_sp: tenSpNhap,
+        id_danh_muc: categoryId,
+        don_vi_tinh: dvt,
+        gia_ban: price
+      });
+
+      if (!result.success) {
+        return alert(result.message || 'Không thể tạo sản phẩm mới');
+      }
+
+      // Tạo thành công → Set addSelected với SP vừa tạo
+      addSelected = {
+        ID_sp: result.product.id,
+        Ma: result.product.ma,
+        Ten_sp: result.product.ten,
+        Don_vi_tinh: result.product.dvt,
+        Gia_hien_tai: result.product.gia
+      };
+
+      // Cập nhật UI
+      document.getElementById('wh-add-ma').value = addSelected.Ma;
+      document.getElementById('wh-add-dvt').value = addSelected.Don_vi_tinh;
+
+    } catch (err) {
+      console.error('Error creating product:', err);
+      return alert('Lỗi khi tạo sản phẩm mới');
+    }
+  }
+
+  // Thêm vào danh sách
   addLines.push({
     ID_sp: addSelected.ID_sp,
     Ten_sp: addSelected.Ten_sp,

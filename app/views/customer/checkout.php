@@ -348,7 +348,7 @@ body, html {
     border-radius: 50%;
     border: none;
     background: white;
-    color: #496C2C;
+    color: #7BC043;
     font-size: 14px;
     font-weight: 700;
     display: flex;
@@ -746,9 +746,17 @@ function updateQuantity(cartId, change) {
     
     let url = '<?= BASE_URL ?>/checkout/updateDirectQuantity'; // Default for direct
     
+    
     if (cartId !== 'direct') {
         formData.append('cart_id', cartId);
-        url = '<?= BASE_URL ?>/cart/update';
+        // CRITICAL FIX: Use specific Checkout endpoint that respects selected_ids
+        url = '<?= BASE_URL ?>/checkout/update-cart-quantity';
+        
+        // Pass selected_ids so backend calculates partial total correctly
+        const selectedIdsInput = document.querySelector('input[name="selected_ids"]');
+        if (selectedIdsInput) {
+            formData.append('selected_ids', selectedIdsInput.value);
+        }
     }
     
     // Vô hiệu hóa các nút

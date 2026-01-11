@@ -45,11 +45,11 @@
         <div class="wh-row-2">
           <div class="wh-field">
             <label>Mã SP</label>
-            <input id="wh-add-ma" disabled>
+            <input id="wh-add-ma" disabled placeholder="Tự sinh khi tạo mới">
           </div>
           <div class="wh-field">
             <label>ĐVT</label>
-            <input id="wh-add-dvt" disabled>
+            <input id="wh-add-dvt" placeholder="VD: Hộp, Cái, Kg...">
           </div>
         </div>
 
@@ -72,13 +72,14 @@
             <label>Danh mục</label>
             <select id="wh-add-category">
               <option value="">-- Chọn danh mục --</option>
-              <option value="thuc-pham">Thực phẩm</option>
-              <option value="do-uong">Đồ uống</option>
-              <option value="do-gia-dung">Đồ gia dụng</option>
-              <option value="my-pham">Mỹ phẩm</option>
-              <option value="dien-tu">Điện tử</option>
-              <option value="thoi-trang">Thời trang</option>
-              <option value="khac">Khác</option>
+              <?php
+              $categories = $categories ?? [];
+              foreach ($categories as $cat):
+                ?>
+                <option value="<?= (int)($cat['ID_danh_muc'] ?? $cat['id'] ?? 0) ?>">
+                  <?= htmlspecialchars($cat['Ten_danh_muc'] ?? $cat['ten'] ?? '') ?>
+                </option>
+              <?php endforeach; ?>
             </select>
           </div>
         </div>

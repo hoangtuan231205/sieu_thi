@@ -19,6 +19,25 @@ class Product extends Model {
     protected $primaryKey = 'ID_sp';
     
     /**
+     * Override delete để kiểm tra ràng buộc (Safety Logic)
+     */
+    public function delete($id) {
+        // 1. Kiểm tra có trong đơn hàng không
+        if ($this->hasOrders($id)) {
+            return false; // Không thể xóa vì có đơn hàng
+        }
+        
+        // 2. Kiểm tra có trong kho không (tồn > 0)
+        // Nếu tồn > 0 thì không cho xóa (phải hủy trước để đảm bảo audit trail)
+        $product = $this->findById($id);
+        if ($product && $product['So_luong_ton'] > 0) {
+            return false; 
+        }
+        
+        return parent::delete($id);
+    }
+    
+    /**
      * User ID hiện tại (cho trigger ghi log)
      */
     private $currentUserId = null;
@@ -410,15 +429,16 @@ class Product extends Model {
                 WHERE 1=1";
         
         $params = [];
+        $hasKeyword = !empty($filters['keyword']);
+        $keyword = $hasKeyword ? trim($filters['keyword']) : '';
         
-        // ===== FILTERS ✅ IMPROVED =====
+        // ===== FILTERS =====
         if (!empty($filters['category_id']) && is_numeric($filters['category_id'])) {
             $sql .= " AND sp.ID_danh_muc = ?";
             $params[] = (int)$filters['category_id'];
         }
         
         if (!empty($filters['status'])) {
-            // Whitelist status
             $allowedStatus = ['active', 'inactive'];
             if (in_array($filters['status'], $allowedStatus)) {
                 $sql .= " AND sp.Trang_thai = ?";
@@ -426,25 +446,126 @@ class Product extends Model {
             }
         }
         
-        if (!empty($filters['keyword'])) {
-            $keyword = trim($filters['keyword']);
-            if (strlen($keyword) > 0 && strlen($keyword) <= 200) {
-                $sql .= " AND (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ?)";
-                $searchTerm = '%' . $keyword . '%';
-                $params[] = $searchTerm;
-                $params[] = $searchTerm;
+        // SQL LIKE for initial filtering - includes category name!
+        if ($hasKeyword && strlen($keyword) > 0 && strlen($keyword) <= 200) {
+            $sql .= " AND (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ? OR dm.Ten_danh_muc LIKE ?)";
+            $searchTerm = '%' . $keyword . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+        
+        // ===== ORDER BY =====
+        $sql .= " ORDER BY sp.Ngay_tao DESC";
+        
+        // ===== LIMIT (fetch more if keyword to allow PHP filtering) =====
+        $fetchLimit = $hasKeyword ? max(1, min((int)$limit * 5, 500)) : max(1, min((int)$limit, 100));
+        $fetchOffset = $hasKeyword ? 0 : max(0, (int)$offset);
+        
+        $sql .= " LIMIT ? OFFSET ?";
+        $params[] = $fetchLimit;
+        $params[] = $fetchOffset;
+        
+        $results = $this->db->query($sql, $params)->fetchAll();
+        
+        // ===== VIETNAMESE DIACRITICS FILTER (PHP-side) =====
+        if ($hasKeyword && strlen($keyword) > 0) {
+            $filteredResults = [];
+            
+            foreach ($results as $product) {
+                $matchInName = $this->vietnameseMatch($product['Ten'], $keyword);
+                $matchInCode = $this->vietnameseMatch($product['Ma_hien_thi'] ?? '', $keyword);
+                $matchInCategory = $this->vietnameseMatch($product['Ten_danh_muc'] ?? '', $keyword);
+                
+                if ($matchInName || $matchInCode || $matchInCategory) {
+                    $filteredResults[] = $product;
+                }
+            }
+            
+            // Apply offset and limit after filtering
+            return array_slice($filteredResults, (int)$offset, (int)$limit);
+        }
+        
+        return $results;
+    }
+
+    /**
+     * Đếm số lượng sản phẩm cho Admin (bao gồm active/inactive)
+     * Matches getProductsForAdmin logic
+     * 
+     * @param array $filters
+     * @return int
+     */
+    public function countProductsForAdmin($filters = []) {
+        $hasKeyword = !empty($filters['keyword']);
+        $keyword = $hasKeyword ? trim($filters['keyword']) : '';
+        
+        // If keyword search, need PHP-side filtering for Vietnamese accuracy
+        if ($hasKeyword && strlen($keyword) > 0 && strlen($keyword) <= 200) {
+            // Join with danh_muc to also search category name
+            $sql = "SELECT sp.Ten, sp.Ma_hien_thi, dm.Ten_danh_muc 
+                    FROM {$this->table} sp
+                    LEFT JOIN danh_muc dm ON sp.ID_danh_muc = dm.ID_danh_muc
+                    WHERE 1=1";
+            $params = [];
+            
+            // Apply non-keyword filters
+            if (!empty($filters['category_id']) && is_numeric($filters['category_id'])) {
+                $sql .= " AND sp.ID_danh_muc = ?";
+                $params[] = (int)$filters['category_id'];
+            }
+            
+            if (!empty($filters['status'])) {
+                $allowedStatus = ['active', 'inactive'];
+                if (in_array($filters['status'], $allowedStatus)) {
+                    $sql .= " AND sp.Trang_thai = ?";
+                    $params[] = $filters['status'];
+                }
+            }
+            
+            // SQL LIKE for initial filtering - includes category!
+            $sql .= " AND (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ? OR dm.Ten_danh_muc LIKE ?)";
+            $searchTerm = '%' . $keyword . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            
+            $results = $this->db->query($sql, $params)->fetchAll();
+            
+            // Vietnamese diacritics filtering in PHP
+            $count = 0;
+            foreach ($results as $product) {
+                $matchInName = $this->vietnameseMatch($product['Ten'], $keyword);
+                $matchInCode = $this->vietnameseMatch($product['Ma_hien_thi'] ?? '', $keyword);
+                $matchInCategory = $this->vietnameseMatch($product['Ten_danh_muc'] ?? '', $keyword);
+                
+                if ($matchInName || $matchInCode || $matchInCategory) {
+                    $count++;
+                }
+            }
+            
+            return $count;
+        }
+        
+        // No keyword - simple SQL count
+        $sql = "SELECT COUNT(*) as total FROM {$this->table} sp WHERE 1=1";
+        $params = [];
+        
+        if (!empty($filters['category_id']) && is_numeric($filters['category_id'])) {
+            $sql .= " AND sp.ID_danh_muc = ?";
+            $params[] = (int)$filters['category_id'];
+        }
+        
+        if (!empty($filters['status'])) {
+            $allowedStatus = ['active', 'inactive'];
+            if (in_array($filters['status'], $allowedStatus)) {
+                $sql .= " AND sp.Trang_thai = ?";
+                $params[] = $filters['status'];
             }
         }
         
-        // ===== ORDER BY & LIMIT ✅ FIX =====
-        $limit = max(1, min((int)$limit, 100));
-        $offset = max(0, (int)$offset);
-        
-        $sql .= " ORDER BY sp.Ngay_tao ASC LIMIT ? OFFSET ?";
-        $params[] = $limit;
-        $params[] = $offset;
-        
-        return $this->db->query($sql, $params)->fetchAll();
+        $result = $this->db->query($sql, $params)->fetch();
+        return (int)($result['total'] ?? 0);
     }
     
     /**
@@ -667,13 +788,20 @@ class Product extends Model {
     }
     
     /**
-     * Tìm kiếm sản phẩm (cho warehouse)
+     * Tìm kiếm sản phẩm (cho warehouse/phiếu nhập/phiếu hủy)
+     * Có hỗ trợ tiếng Việt: cá ≠ cải, rau ≠ râu
      * 
      * @param string $keyword
      * @param int $limit
      * @return array
      */
     public function searchForWarehouse($keyword, $limit = 20) {
+        $keyword = trim($keyword);
+        if (mb_strlen($keyword) < 1) return [];
+        
+        // Fetch more for PHP filtering
+        $fetchLimit = max($limit * 5, 100);
+        
         $sql = "SELECT 
                     sp.ID_sp,
                     sp.Ma_hien_thi,
@@ -684,13 +812,42 @@ class Product extends Model {
                     dm.Ten_danh_muc
                 FROM {$this->table} sp
                 LEFT JOIN danh_muc dm ON sp.ID_danh_muc = dm.ID_danh_muc
-                WHERE (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ?)
+                WHERE (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ? OR dm.Ten_danh_muc LIKE ?)
                     AND sp.Trang_thai = 'active'
                 ORDER BY sp.Ten ASC
-                LIMIT {$limit}";
+                LIMIT {$fetchLimit}";
         
-        $keyword = '%' . $keyword . '%';
-        return $this->db->query($sql, [$keyword, $keyword])->fetchAll();
+        $searchTerm = '%' . $keyword . '%';
+        $results = $this->db->query($sql, [$searchTerm, $searchTerm, $searchTerm])->fetchAll();
+        
+        // Vietnamese diacritics filter
+        $kwLower = mb_strtolower($keyword, 'UTF-8');
+        $filtered = [];
+        
+        foreach ($results as $row) {
+            $tenLower = mb_strtolower($row['Ten'] ?? '', 'UTF-8');
+            $maLower = mb_strtolower($row['Ma_hien_thi'] ?? '', 'UTF-8');
+            $dmLower = mb_strtolower($row['Ten_danh_muc'] ?? '', 'UTF-8');
+            
+            if ($this->vietnameseMatch($row['Ten'] ?? '', $keyword) ||
+                $this->vietnameseMatch($row['Ma_hien_thi'] ?? '', $keyword) ||
+                $this->vietnameseMatch($row['Ten_danh_muc'] ?? '', $keyword)) {
+                $filtered[] = $row;
+                if (count($filtered) >= $limit) break;
+            }
+        }
+        
+        return $filtered;
+    }
+    
+    /**
+     * Tìm kiếm sản phẩm cho phiếu hủy
+     * @param string $keyword
+     * @param int $limit
+     * @return array
+     */
+    public function searchForDisposal($keyword, $limit = 20) {
+        return $this->searchForWarehouse($keyword, $limit);
     }
     
     /**
@@ -834,60 +991,16 @@ class Product extends Model {
         return $this->db->query($sql, [$categoryId, $limit])->fetchAll();
     }
 
-    /**
-     * Tìm kiếm sản phẩm cho phiếu hủy
-     * 
-     * @param string $keyword
-     * @param int $limit
-     * @return array
-     */
-    public function searchForDisposal($keyword, $limit = 20) {
-        $keyword = trim($keyword);
-        $searchTerm = '%' . $keyword . '%';
-        
-        $sql = "SELECT 
-                    ID_sp,
-                    Ma_hien_thi,
-                    Ten,
-                    Gia_nhap,
-                    So_luong_ton,
-                    Don_vi_tinh
-                FROM {$this->table}
-                WHERE Trang_thai = 'active'
-                    AND So_luong_ton > 0
-                    AND (Ten LIKE ? OR Ma_hien_thi LIKE ?)
-                ORDER BY Ten ASC
-                LIMIT ?";
-                
-        return $this->db->query($sql, [$searchTerm, $searchTerm, $limit])->fetchAll();
-    }
+
     
     /**
-     * Lấy danh sách lô hàng còn tồn kho của sản phẩm
+     * Lấy danh sách các lô hàng còn tồn của sản phẩm (FEFO)
      * 
      * @param int $productId
      * @return array
      */
     public function getBatches($productId) {
-        // Query joins with phieu_nhap to get Ma_phieu
-        $sql = "SELECT 
-                    ct.ID_chi_tiet_nhap,
-                    pn.Ma_hien_thi as Ma_phieu_nhap,
-                    ct.So_luong_con,
-                    ct.Don_gia_nhap,
-                    ct.Ngay_het_han
-                FROM chi_tiet_phieu_nhap ct
-                JOIN phieu_nhap_kho pn ON ct.ID_phieu_nhap = pn.ID_phieu_nhap
-                WHERE ct.ID_sp = ? 
-                AND (ct.So_luong_con > 0 OR ct.So_luong_con IS NULL)
-                ORDER BY ct.Ngay_het_han ASC, ct.ID_chi_tiet_nhap ASC";
-                
-        // Note: Logic 'OR ct.So_luong_con IS NULL' might be needed if old data didn't track So_luong_con correctly 
-        // but assuming new system uses So_luong_con. 
-        // For safety, assuming So_luong_con IS NULL means it's an old record or full stock, 
-        // but typically we initialized So_luong_con = So_luong via migration.
-        // Let's stick to So_luong_con > 0.
-        
+        // Updated to use display code from phieu_nhap_kho table
         $sql = "SELECT 
                     ct.ID_chi_tiet_nhap,
                     pn.Ma_hien_thi as Ma_phieu_nhap,
@@ -898,8 +1011,84 @@ class Product extends Model {
                 JOIN phieu_nhap_kho pn ON ct.ID_phieu_nhap = pn.ID_phieu_nhap
                 WHERE ct.ID_sp = ? 
                 AND ct.So_luong_con > 0
-                ORDER BY ct.Ngay_het_han ASC";
-
+                ORDER BY 
+                    CASE WHEN ct.Ngay_het_han IS NULL THEN 1 ELSE 0 END, 
+                    ct.Ngay_het_han ASC, 
+                    ct.ID_chi_tiet_nhap ASC";
+        
         return $this->db->query($sql, [$productId])->fetchAll();
     }
+    /**
+     * ==========================================================================
+     * ADMIN CRUD METHODS
+     * ==========================================================================
+     */
+
+    /**
+     * Lấy sản phẩm theo ID
+     * 
+     * @param int $id
+     * @return array|false
+     */
+    public function findById($id) {
+        return $this->db->query("SELECT * FROM {$this->table} WHERE ID_sp = ?", [$id])->fetch();
+    }
+
+    /**
+     * Thêm sản phẩm mới
+     * 
+     * @param array $data
+     * @return int|false ID sản phẩm mới
+     */
+    public function create($data) {
+        $sql = "INSERT INTO {$this->table} (
+                    Ten, 
+                    Ma_hien_thi, 
+                    ID_danh_muc, 
+                    Gia_tien, 
+                    So_luong_ton, 
+                    Don_vi_tinh, 
+                    Mo_ta_sp,
+                    Hinh_anh, 
+                    Trang_thai,
+                    Xuat_xu,
+                    Thanh_phan,
+                    Ngay_tao
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        
+        $params = [
+            $data['Ten'],
+            $data['Ma_hien_thi'] ?? null,
+            $data['ID_danh_muc'],
+            $data['Gia_tien'],
+            $data['So_luong_ton'] ?? 0,
+            $data['Don_vi_tinh'],
+            $data['Mo_ta_sp'] ?? null,
+            $data['Hinh_anh'] ?? null,
+            $data['Trang_thai'] ?? 'active',
+            $data['Xuat_xu'] ?? null,
+            $data['Thanh_phan'] ?? null
+        ];
+        
+        return $this->db->insert($sql, $params);
+    }
+
+    /**
+     * Cập nhật sản phẩm
+     * 
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
+
+
+    /**
+     * Xóa sản phẩm
+     * 
+     * @param int $id
+     * @return bool
+     */
+
+
+
 }

@@ -69,7 +69,7 @@ class OrderController extends Controller {
     public function detail($orderId = null) {
         if (!$orderId || !is_numeric($orderId)) {
             Session::flash('error', 'Đơn hàng không tồn tại');
-            redirect('/public/orders');
+            redirect(BASE_URL . '/orders');
         }
         
         $userId = Session::getUserId();
@@ -78,12 +78,12 @@ class OrderController extends Controller {
         
         if (!$order) {
             Session::flash('error', 'Đơn hàng không tồn tại');
-            redirect('/public/orders');
+            redirect(BASE_URL . '/orders');
         }
         
         if ($order['ID_tk'] != $userId) {
             Session::flash('error', 'Bạn không có quyền xem đơn hàng này');
-            redirect('/public/orders');
+            redirect(BASE_URL . '/orders');
         }
         
         $orderDetails = $this->orderModel->getOrderDetails($orderId);
@@ -115,7 +115,7 @@ class OrderController extends Controller {
                 $this->json(['success' => false, 'message' => 'Phương thức không hợp lệ'], 400);
                 return;
             }
-            redirect('/public/orders');
+            redirect(BASE_URL . '/orders');
         }
 
         // Lấy order_id từ JSON body vì AJAX request gửi qua body
@@ -130,7 +130,7 @@ class OrderController extends Controller {
                 return;
             }
             Session::flash('error', 'Đơn hàng không tồn tại');
-            redirect('/public/orders');
+            redirect(BASE_URL . '/orders');
         }
         
         $userId = Session::getUserId();
@@ -143,7 +143,7 @@ class OrderController extends Controller {
                 return;
             }
             Session::flash('error', 'Đơn hàng không tồn tại');
-            redirect('/public/orders');
+            redirect(BASE_URL . '/orders');
         }
         
         if ($order['ID_tk'] != $userId) {
@@ -152,7 +152,7 @@ class OrderController extends Controller {
                 return;
             }
             Session::flash('error', 'Bạn không có quyền hủy đơn hàng này');
-            redirect('/public/orders');
+            redirect(BASE_URL . '/orders');
         }
         
         if ($order['Trang_thai'] !== 'dang_xu_ly') {
@@ -161,7 +161,7 @@ class OrderController extends Controller {
                 return;
             }
             Session::flash('error', 'Chỉ có thể hủy đơn hàng đang chờ xác nhận');
-            redirect('/public/orders/detail/' . $orderId);
+            redirect(BASE_URL . '/orders/detail/' . $orderId);
         }
         
         $result = $this->orderModel->cancelOrder($orderId);
@@ -185,7 +185,7 @@ class OrderController extends Controller {
             Session::flash('error', 'Hủy đơn hàng thất bại. Vui lòng thử lại.');
         }
         
-        redirect('/public/orders/detail/' . $orderId);
+        redirect(BASE_URL . '/orders/detail/' . $orderId);
     }
     
     /**
@@ -218,6 +218,87 @@ class OrderController extends Controller {
             'updated_at' => date('d/m/Y H:i', strtotime($order['Ngay_cap_nhat']))
         ]);
     }
+    
+    /**
+     * METHOD: reorder() - MUA LẠI ĐƠN HÀNG
+     */
+    public function reorder($orderId = null) {
+        if (!$orderId || !is_numeric($orderId)) {
+            Session::flash('error', 'Đơn hàng không hợp lệ');
+            redirect(BASE_URL . '/orders');
+            exit;
+        }
+
+        $userId = Session::getUserId();
+        
+        // Security Check
+        $order = $this->orderModel->findById($orderId);
+        if (!$order || $order['ID_tk'] != $userId) {
+            Session::flash('error', 'Đơn hàng không tồn tại hoặc không phải của bạn.');
+            redirect(BASE_URL . '/orders');
+            exit;
+        }
+        
+        // 1. Get Order Details
+        $details = $this->orderModel->getOrderDetails($orderId);
+        
+        if (empty($details)) {
+            Session::flash('error', 'Đơn hàng không có sản phẩm hoặc không tồn tại.');
+            redirect(BASE_URL . '/orders');
+            exit;
+        }
+        
+        $cartModel = $this->model('Cart');
+        $productModel = $this->model('Product');
+        
+        // 2. Add Valid Products to Cart
+        $successCount = 0;
+        $failCount = 0;
+        
+        foreach ($details as $item) {
+            // Check product existence
+            $productId = $item['ID_sp'] ?? null;
+            if (!$productId) continue;
+
+            $product = $productModel->findById($productId);
+            
+            // Normalize status for comparison consistency
+            $status = isset($product['Trang_thai']) ? strtolower(trim($product['Trang_thai'])) : '';
+            $stock = isset($product['So_luong_ton']) ? (int)$product['So_luong_ton'] : 0;
+            
+            // Validation: Must exist, be active, and have stock
+            if ($product && $status === 'active' && $stock > 0) {
+                // Determine quantity to add (limit by available stock)
+                $qtyToAdd = min($item['So_luong'], $stock);
+                
+                // Add to cart (additive)
+                $cartModel->addToCart($userId, $productId, $qtyToAdd);
+                $successCount++;
+            } else {
+                $failCount++;
+            }
+        }
+        
+        // 3. Handle Result & Redirect
+        if ($successCount > 0) {
+            // Recalculate badge immediately
+            Session::syncCartCount($userId);
+            
+            $msg = 'Đã thêm sản phẩm vào giỏ hàng.';
+            if ($failCount > 0) {
+                $msg .= ' (Một số sản phẩm không còn kinh doanh hoặc hết hàng đã bị bỏ qua)';
+            }
+            
+            Session::flash('success', $msg);
+            redirect(BASE_URL . '/cart');
+            exit;
+        } else {
+            Session::flash('error', 'Rất tiếc, các sản phẩm trong đơn hàng này hiện đã hết hàng hoặc ngừng kinh doanh.');
+            redirect(BASE_URL . '/orders');
+            exit;
+        }
+    }
+
     
     /**
      * Helper: Lấy text hiển thị cho trạng thái

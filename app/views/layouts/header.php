@@ -54,7 +54,7 @@
             
             <!-- Logo -->
             <div class="col-lg-2 col-md-3 col-6">
-                <a href="<?= BASE_URL ?>/public" class="logo-link">
+                <a href="<?= BASE_URL ?>" class="logo-link">
                     <div class="logo">
                         <div class="logo-icon">FM</div>
                         <span class="logo-text">FreshMart</span>
@@ -148,9 +148,21 @@
                     
                     
                     <!-- Icon Giỏ hàng -->
+                    <?php
+                    // Đảm bảo số lượng luôn chính xác "mọi lúc mọi nơi"
+                    if (Session::isLoggedIn()) {
+                        $currentCount = Session::getCartCount();
+                        // Nếu session = 0, thử đồng bộ lại 1 lần từ DB để chắc chắn
+                        if ($currentCount <= 0) {
+                            $currentCount = Session::syncCartCount();
+                        }
+                    } else {
+                        $currentCount = 0;
+                    }
+                    ?>
                     <a href="<?= BASE_URL ?>/cart" class="action-btn cart-btn" title="Giỏ hàng">
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-badge"><?= $cart_count ?? 0 ?></span>
+                        <span class="cart-badge"><?= $currentCount ?></span>
                     </a>
                     
                 </div>
@@ -191,8 +203,12 @@ $defaultIcon = 'fas fa-shopping-basket';
     <div class="container">
         <div class="nav-wrapper">
             
-            <!-- Main Menu -->
+            <!-- Main Menu - Horizontal Pills Style -->
             <ul class="nav-menu">
+                <!-- Trang Chủ - Active -->
+                <li class="nav-item active">
+                    <a href="<?= BASE_URL ?>" class="nav-link active">Trang Chủ</a>
+                </li>
                 <?php foreach ($categories as $cat): ?>
                     <?php 
                         $hasChildren = !empty($cat['children']); 

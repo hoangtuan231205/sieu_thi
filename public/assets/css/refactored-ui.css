@@ -1,29 +1,25 @@
 :root {
-    /* ========== THANG MÀU CHÍNH (Xanh Lá Lime) ========== */
-    /* Màu người dùng: #E2FBBD, #DEF6B2 */
-    --primary-50: #F5FDEB;
+    /* ========== THANG MÀU CHÍNH (Xanh Lá Lime - FreshMart) ========== */
+    --primary-50: #f4f9ef;
     --primary-100: #E2FBBD;
-    /* Màu người dùng */
     --primary-200: #DEF6B2;
-    /* Màu người dùng */
-    --primary-300: #7BC043;
-    --primary-400: #7BC043;
-    --primary-500: #80d63af6;
-    /* Màu lime chính */
-    --primary-600: #7BC043;
-    --primary-700: #7BC043;
-    --primary-800: #7BC043;
-    --primary-900: #7BC043;
+    --primary-300: #a8d86a;
+    --primary-400: #8fcc4f;
+    --primary-500: #7BC043;
+    /* Màu lime chính - FreshMart Brand */
+    --primary-600: #6ab035;
+    --primary-700: #5a9a2d;
+    --primary-800: #4a8025;
+    --primary-900: #3a661d;
 
     /* ========== MÀU PHỤ (Xanh navy #2D3657) ========== */
-    /* Màu người dùng: #2D3657 */
     --secondary-50: #F0F1F5;
     --secondary-100: #E1E3EB;
     --secondary-200: #C3C7D7;
     --secondary-300: #9EA4BC;
     --secondary-400: #6B7499;
     --secondary-500: #2D3657;
-    /* Màu người dùng - Navy */
+    /* Navy */
     --secondary-600: #242B47;
     --secondary-700: #1B2037;
     --secondary-800: #121527;
@@ -43,7 +39,6 @@
 
     /* ========== MÀU NGỮ NGHĨA ========== */
     --color-success: #7BC043;
-    /* Xanh lá */
     --color-success-light: #E2FBBD;
     --color-warning: #f59e0b;
     --color-warning-light: #fef3c7;
@@ -70,23 +65,15 @@
     --color-woodland-light: var(--primary-100);
     --font-primary: var(--font-family);
 
-    /* ========== THANG CHỮ (Tỷ lệ chính) ========== */
+    /* ========== THANG CHỮ ========== */
     --font-size-xs: 0.8125rem;
-    /* 13px */
     --font-size-sm: 0.9375rem;
-    /* 15px */
     --font-size-base: 1rem;
-    /* 16px - Nội dung */
     --font-size-lg: 1.1875rem;
-    /* 19px - Tiêu đề khối */
     --font-size-xl: 1.3125rem;
-    /* 21px */
     --font-size-2xl: 1.5rem;
-    /* 24px */
     --font-size-3xl: 1.75rem;
-    /* 28px - Tiêu đề lớn */
     --font-size-4xl: 2.125rem;
-    /* 34px */
 
     /* ========== CHIỀU CAO DÒNG ========== */
     --line-height-tight: 1.2;
@@ -102,53 +89,52 @@
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
 
-    /* Hệ thống khoảng cách (đơn vị cơ bản 8px) */
+    /* Hệ thống khoảng cách */
     --spacing-xs: 0.25rem;
-    /* 4px */
     --spacing-sm: 0.5rem;
-    /* 8px */
     --spacing-md: 1rem;
-    /* 16px */
     --spacing-lg: 1.5rem;
-    /* 24px */
     --spacing-xl: 2rem;
-    /* 32px */
     --spacing-2xl: 2.5rem;
-    /* 40px */
     --spacing-3xl: 3rem;
-    /* 48px */
     --spacing-4xl: 4rem;
-    /* 64px */
 
-    /* Bo góc - Tiêu chuẩn Senior 12px */
-    --radius-sm: 4px;
+    /* Bo góc - Kích thước vừa phải */
+    --radius-sm: 6px;
     --radius-md: 8px;
     --radius-lg: 12px;
     --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+    --radius-4xl: 32px;
     --radius-full: 9999px;
 
-    /* Bóng đổ - Chuyên nghiệp tinh tế */
+    /* Bóng đổ - Green tint */
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 4px 12px rgba(123, 192, 67, 0.08);
+    --shadow-md: 0 8px 24px rgba(123, 192, 67, 0.12);
+    --shadow-lg: 0 12px 32px rgba(123, 192, 67, 0.16);
+    --shadow-xl: 0 20px 40px rgba(123, 192, 67, 0.2);
 
     /* ========== ANIMATION ========== */
     --duration-fast: 150ms;
-    --duration-normal: 250ms;
+    --duration-normal: 300ms;
+    --duration-slow: 500ms;
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: all 0.3s ease;
+    --transition-fast: all 0.15s ease;
 
-    /* Kiểu chữ */
+    /* Kiểu chữ - Inter (như cũ) */
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
     /* Bố cục */
-    --max-width-container: 1140px;
+    --max-width-container: 1200px;
 
     /* ========== KÍCH THƯỚC THÀNH PHẦN ========== */
     --button-height-sm: 32px;
     --button-height-md: 40px;
     --button-height-lg: 48px;
-    --input-height: 40px;
+    --input-height: 44px;
 }
 
 /* ========== KIỂU CHỮ RESPONSIVE [ĐÃ XÓA - CHỈ DESKTOP] ========== */
@@ -156,12 +142,23 @@
 /* =============================================================================
    1. GLOBAL RESETS & SCALING
    ============================================================================= */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+}
+
 body {
-    background-color: #f8f9fa !important;
     font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    color: var(--secondary-500);
+    color: var(--color-port-gore);
+    background-color: #f8fbf6;
     line-height: var(--line-height-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.main-content {
+    min-height: 70vh;
+    background-color: #f8fbf6;
 }
 
 h1,
@@ -292,19 +289,22 @@ a:hover {
    ============================================================================= */
 
 .product-card-standard {
-    background: var(--color-white);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: white;
+    border-radius: 16px;
+    padding: 12px;
+    overflow: visible;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     height: 100%;
+    border: 1px solid rgba(123, 192, 67, 0.08);
+    position: relative;
 }
 
 .product-card-standard:hover {
+    box-shadow: 0 8px 24px rgba(123, 192, 67, 0.12);
     transform: translateY(-4px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 /* Container Ảnh Sản phẩm */
@@ -312,9 +312,10 @@ a:hover {
     position: relative;
     width: 100%;
     padding-top: 100%;
-    /* Tỷ lệ 1:1 */
     background: #f8f9fa;
     overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 12px;
 }
 
 .product-card-standard .product-image-wrapper img {
@@ -323,99 +324,121 @@ a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    padding: 12px;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.product-card-standard:hover .product-image-wrapper img {
+    transform: scale(1.05);
 }
 
 /* Phần Thông tin Sản phẩm */
 .product-card-standard .product-info {
-    padding: 16px;
+    padding: 0 4px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
     flex-grow: 1;
+}
+
+/* Category label */
+.product-card-standard .product-category {
+    font-size: 10px;
+    font-weight: 600;
+    color: #7BC043;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .product-card-standard .product-name {
     font-size: 14px;
-    font-weight: 500;
-    color: #1f2937;
-    line-height: 1.4;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 40px;
     margin: 0;
+    min-height: 36px;
 }
 
-/* Đánh giá */
-.product-card-standard .product-rating {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 13px;
-}
-
-.product-card-standard .product-rating .stars {
-    color: #fbbf24;
-    display: flex;
-    gap: 2px;
-}
-
-.product-card-standard .product-rating .rating-value {
-    color: #6b7280;
-    font-weight: 500;
-}
-
-/* Giá */
+/* Price */
 .product-card-standard .product-price {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
-    color: var(--color-woodland);
+    color: #7BC043;
     margin: 4px 0;
 }
 
-/* Các nút thao tác */
+.product-card-standard .product-price-old {
+    font-size: 12px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    margin-left: 6px;
+}
+
+/* Rating - yellow stars */
+.product-card-standard .product-rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 11px;
+}
+
+.product-card-standard .product-rating .stars {
+    color: #facc15;
+    display: flex;
+    gap: 1px;
+}
+
+.product-card-standard .product-rating .rating-value {
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+/* Action buttons - Grid 2 columns */
 .product-card-standard .product-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: auto;
+    gap: 6px;
+    margin-top: 8px;
 }
 
 .product-card-standard .btn-add,
 .product-card-standard .btn-buy {
-    height: 40px;
+    height: 34px;
     border-radius: 8px;
     border: none;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
+    transition: all 0.2s ease;
 }
 
 .product-card-standard .btn-add {
-    background: var(--color-woodland);
+    background: #7BC043;
     color: white;
 }
 
 .product-card-standard .btn-add:hover {
-    background: #3a5623;
+    background: #6ab035;
 }
 
 .product-card-standard .btn-buy {
-    background: var(--color-port-gore);
+    background: #1e293b;
     color: white;
 }
 
 .product-card-standard .btn-buy:hover {
-    background: #1a0b36;
+    background: #0f172a;
 }
 
 /* =============================================================================

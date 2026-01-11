@@ -171,7 +171,8 @@ class App {
             
             // Lấy method
             if (isset($url[1])) {
-                $this->method = $url[1];
+                // FIX: Convert kebab-case to camelCase (e.g., buy-now -> buyNow)
+                $this->method = str_replace('-', '', lcfirst(ucwords($url[1], '-')));
             }
             
             // Params

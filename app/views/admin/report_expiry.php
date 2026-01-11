@@ -16,8 +16,8 @@
             <span class="current">Cảnh báo hết hạn</span>
         </div>
         
-        <!-- Report Tabs Navigation -->
-        <?php include __DIR__ . '/components/reports_tabs.php'; ?>
+        <!-- Warehouse Tabs Navigation -->
+        <?php include __DIR__ . '/components/warehouse_tabs.php'; ?>
         
         <!-- Page Header -->
         <div class="admin-page-header">
@@ -251,9 +251,24 @@
                                         <p class="muted">Còn <?= $batch['So_ngay_con'] ?> ngày</p>
                                     <?php endif; ?>
                                 </div>
-                                <?php if ($level == 'DA_HET_HAN' || $level == 'TRONG_7_NGAY'): ?>
-                                    <a href="<?= BASE_URL ?>/admin/disposal-add" class="alert-card-btn">
-                                        <?= $level == 'DA_HET_HAN' ? 'Hủy' : 'Giảm giá' ?>
+                                <?php if ($level == 'DA_HET_HAN'): ?>
+                                    <?php 
+                                    $price = ($batch['So_luong_con'] > 0) ? round($batch['Gia_tri_ton'] / $batch['So_luong_con']) : 0;
+                                    $params = http_build_query([
+                                        'product_id' => $batch['ID_sp'],
+                                        'batch_id' => $batch['ID_lo_hang'] ?? '',
+                                        'batch_code' => $batch['Ma_phieu_nhap'] ?? '',
+                                        'quantity' => $batch['So_luong_con'],
+                                        'price' => $price,
+                                        'reason' => 'Sản phẩm đã hết hạn sử dụng'
+                                    ]);
+                                    ?>
+                                    <a href="<?= BASE_URL ?>/admin/disposal-add?<?= $params ?>" class="alert-card-btn">
+                                        Hủy
+                                    </a>
+                                <?php elseif ($level == 'TRONG_7_NGAY'): ?>
+                                    <a href="javascript:void(0)" onclick="fetchAndEditProduct(<?= $batch['ID_sp'] ?>)" class="alert-card-btn warning">
+                                        Giảm giá
                                     </a>
                                 <?php endif; ?>
                             </div>
@@ -270,5 +285,164 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Modal -->
+<div id="productModal" class="modal-overlay hidden">
+    <div class="admin-card modal-content" style="max-width: 800px;">
+        <div class="admin-card-header">
+            <h3 class="admin-card-title">Cập nhật Sản phẩm</h3>
+            <button class="btn-icon" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="productForm" action="<?= BASE_URL ?>/admin/product-save" method="POST" enctype="multipart/form-data" class="admin-card-body">
+            <input type="hidden" name="csrf_token" value="<?= Session::getCsrfToken() ?>">
+            <input type="hidden" name="id" id="productId">
+            
+            <div style="display: grid; grid-template-columns: 1fr 200px; gap: 24px;">
+                <div style="display: grid; gap: 16px;">
+                    <div class="form-group">
+                        <label>Tên sản phẩm <span style="color: var(--admin-danger);">*</span></label>
+                        <input type="text" name="ten" id="productName" class="form-control" required>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>Danh mục <span style="color: var(--admin-danger);">*</span></label>
+                            <select name="danh_muc_id" id="productCategory" class="form-select" required>
+                                <option value="">-- Chọn danh mục --</option>
+                                <?php foreach ($categories ?? [] as $cat): ?>
+                                    <option value="<?= $cat['ID_danh_muc'] ?>"><?= htmlspecialchars($cat['Ten_danh_muc']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mã hiển thị (SKU)</label>
+                            <input type="text" name="ma_hien_thi" id="productSku" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>Giá bán (VNĐ) <span style="color: var(--admin-danger);">*</span></label>
+                            <input type="number" name="gia_tien" id="productPrice" class="form-control" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Giá nhập (VNĐ)</label>
+                            <input type="number" name="gia_nhap" id="productCost" class="form-control" min="0">
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>Số lượng tồn</label>
+                            <input type="number" name="so_luong" id="productStock" class="form-control" readonly style="background: #f1f5f9;">
+                        </div>
+                        <div class="form-group">
+                            <label>Đơn vị tính</label>
+                            <input type="text" name="don_vi" id="productUnit" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                         <label>Trạng thái</label>
+                         <select name="trang_thai" id="productStatus" class="form-select">
+                             <option value="active">Đang bán</option>
+                             <option value="inactive">Ngừng bán</option>
+                         </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="form-group">
+                        <label>Ảnh đại diện</label>
+                        <div style="border: 2px dashed #e2e8f0; border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; position: relative;" onclick="document.getElementById('productImage').click()">
+                            <input type="file" name="hinh_anh" id="productImage" class="hidden" accept="image/*" onchange="previewImage(this)">
+                            <img id="imagePreview" src="<?= asset('img/placeholder-product.png') ?>" style="width: 100%; height: 150px; object-fit: contain; margin-bottom: 8px;">
+                            <span style="font-size: 13px; color: var(--admin-primary); font-weight: 500;">Chọn ảnh</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label>Mô tả ngắn</label>
+                        <textarea name="mo_ta" id="productDesc" class="form-control" rows="4"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--admin-border);">
+                <button type="button" class="btn-admin-secondary" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn-admin-primary">Lưu sản phẩm</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function fetchAndEditProduct(id) {
+    if(!id) return;
+    
+    // Show modal loading state? Or just wait
+    fetch('<?= BASE_URL ?>/admin/get-product-detail?id=' + id, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                openEditModal(data.product);
+            } else {
+                // Check for 'message' or 'error'
+                let msg = data.message || data.error || 'Lỗi không xác định';
+                alert('Không thể tải thông tin sản phẩm: ' + msg);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Có lỗi xảy ra khi tải thông tin sản phẩm');
+        });
+}
+
+function openEditModal(product) {
+    document.getElementById('productId').value = product.ID_sp;
+    document.getElementById('productName').value = product.Ten;
+    document.getElementById('productCategory').value = product.ID_danh_muc;
+    document.getElementById('productSku').value = product.Ma_hien_thi;
+    document.getElementById('productPrice').value = product.Gia_tien;
+    document.getElementById('productCost').value = product.Gia_nhap || '';
+    document.getElementById('productStock').value = product.So_luong_ton;
+    document.getElementById('productUnit').value = product.Don_vi_tinh;
+    document.getElementById('productDesc').value = product.Mo_ta_sp || product.Mo_ta || '';
+    document.getElementById('productStatus').value = product.Trang_thai;
+    
+    if (product.Hinh_anh) {
+        document.getElementById('imagePreview').src = '<?= asset('img/products/') ?>' + product.Hinh_anh;
+    } else {
+        document.getElementById('imagePreview').src = '<?= asset('img/placeholder-product.png') ?>';
+    }
+    
+    document.getElementById('productModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('productModal').classList.add('hidden');
+}
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal-overlay')) {
+        event.target.classList.add('hidden');
+    }
+}
+</script>
 
 <?php include __DIR__ . '/layouts/footer.php'; ?>

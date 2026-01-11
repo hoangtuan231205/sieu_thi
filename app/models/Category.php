@@ -18,6 +18,23 @@ class Category extends Model {
     protected $primaryKey = 'ID_danh_muc';
     
     /**
+     * Override delete để kiểm tra ràng buộc (Safety Logic)
+     */
+    public function delete($id) {
+        // 1. Kiểm tra có danh mục con không
+        if ($this->hasChildren($id)) {
+            return false;
+        }
+        
+        // 2. Kiểm tra có sản phẩm không
+        if ($this->hasProducts($id)) {
+            return false; 
+        }
+        
+        return parent::delete($id);
+    }
+    
+    /**
      * ==========================================================================
      * CÂY DANH MỤC (HIERARCHICAL)
      * ==========================================================================

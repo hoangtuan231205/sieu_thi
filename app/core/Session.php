@@ -300,7 +300,34 @@ class Session {
      * @param int $count
      */
     public static function setCartCount($count) {
-        self::set('cart_count', $count);
+        self::set('cart_count', (int)$count);
+    }
+
+    /**
+     * Đồng bộ số lượng giỏ hàng từ database vào session
+     * 
+     * @param int|null $userId Nếu null sẽ lấy từ session hiện tại
+     * @return int
+     */
+    public static function syncCartCount($userId = null) {
+        if (!$userId) $userId = self::getUserId();
+        if (!$userId) {
+            self::setCartCount(0);
+            return 0;
+        }
+
+        // Tải Model Cart để lấy số lượng thực tế
+        // Lưu ý: Phải dùng require do autoload có thể chưa chạy hết
+        $cartFile = dirname(__DIR__) . '/models/Cart.php';
+        if (file_exists($cartFile)) {
+            require_once $cartFile;
+            $cart = new Cart();
+            $count = $cart->getCartCount($userId);
+            self::setCartCount($count);
+            return $count;
+        }
+
+        return 0;
     }
     
     // =========================================================================

@@ -150,29 +150,31 @@ function initUserDropdown() {
 // 7. THÊM VÀO GIỎ HÀNG - Xử lý thêm sản phẩm vào giỏ
 // =============================================================================
 
-function addToCart(productId, quantity = 1) {
-    // Lấy CSRF token từ meta tag
-    const csrfToken = document.querySelector('meta[name="csrf_token"]')?.content || '';
-    let baseUrl = document.querySelector('meta[name="base_url"]')?.content || '';
+// =============================================================================
+// 15. MUA NGAY - Thêm vào giỏ và checkout ngay
+// =============================================================================
 
-    // Fallback: nếu baseUrl rỗng, tự tạo từ URL hiện tại
-    if (!baseUrl) {
-        const pathname = window.location.pathname;
-        if (pathname.includes('/sieu_thi')) {
-            baseUrl = '/sieu_thi/public';
-        } else {
-            baseUrl = '';
-        }
+function buyNow(productId, quantity = 1) {
+    const csrfToken = document.querySelector('meta[name="csrf_token"]')?.content || '';
+    const baseUrl = document.querySelector('meta[name="base_url"]')?.content || '';
+
+    // URL Construction Fix
+    let url = baseUrl + '/cart/buyNow'; // Safe bet: use exact method name
+
+    // Remove /public if it's already in baseUrl to avoid double slash
+    if (baseUrl.endsWith('/public')) {
+        url = baseUrl.replace(/\/public$/, '') + '/public/cart/buyNow';
     }
 
-    // Tạo FormData
+    // FIX: Remove hardcoded quantity override
+    // quantity = 1; <--- DELETE THIS
+
     const formData = new FormData();
     formData.append('product_id', productId);
     formData.append('quantity', quantity);
     formData.append('csrf_token', csrfToken);
 
-    // Gửi AJAX request
-    fetch(baseUrl + '/public/cart/add', {
+    fetch(url, {
         method: 'POST',
         body: formData,
         headers: {
@@ -182,13 +184,46 @@ function addToCart(productId, quantity = 1) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Cập nhật badge giỏ hàng
+                window.location.href = baseUrl + '/checkout';
+            } else {
+                if (typeof showNotification === 'function') {
+                    showNotification(data.message || 'Có lỗi xảy ra!', 'error');
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra!');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi Mua Ngay:', error);
+            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+        });
+}
+
+// Update addToCart similarly to ensure URL correctness
+function addToCart(productId, quantity = 1) {
+    const csrfToken = document.querySelector('meta[name="csrf_token"]')?.content || '';
+    let baseUrl = document.querySelector('meta[name="base_url"]')?.content || '';
+
+    // URL Construction Fix
+    let url = baseUrl + '/cart/add';
+
+    const formData = new FormData();
+    formData.append('product_id', productId);
+    formData.append('quantity', quantity);
+    formData.append('csrf_token', csrfToken);
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
                 updateCartBadge(data.cart_count);
-
-                // Hiển thị thông báo
                 showNotification('Đã thêm vào giỏ hàng!', 'success');
-
-                // Animation cho nút giỏ hàng
                 animateCartButton();
             } else {
                 showNotification(data.message || 'Có lỗi xảy ra!', 'error');
@@ -200,16 +235,15 @@ function addToCart(productId, quantity = 1) {
         });
 }
 
+
 // =============================================================================
 // 8. CẬP NHẬT BADGE GIỎ HÀNG - Cập nhật số lượng hiển thị
 // =============================================================================
 
 function updateCartBadge(count) {
     const cartBadge = document.querySelector('.cart-badge');
-
     if (cartBadge) {
         cartBadge.textContent = count;
-
         // Animation bằng CSS class
         cartBadge.classList.add('cart-updated');
         setTimeout(() => {
@@ -224,7 +258,6 @@ function updateCartBadge(count) {
 
 function animateCartButton() {
     const cartBtn = document.querySelector('.cart-btn');
-
     if (cartBtn) {
         cartBtn.style.animation = 'pulse 0.5s ease';
         setTimeout(() => {
@@ -234,10 +267,56 @@ function animateCartButton() {
 }
 
 // =============================================================================
-// 10. CÁC HÀM TIỆN ÍCH
+// 10. SHOW NOTIFICATION - Hiển thị thông báo (Toast)
 // =============================================================================
 
-// Định dạng giá tiền
+function showNotification(message, type = 'success') {
+    // Check if container exists, if not create it
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999;';
+        document.body.appendChild(container); // Fix: Append to body
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-message toast-${type}`;
+    toast.style.cssText = `
+        background: ${type === 'success' ? '#4CAF50' : '#F44336'};
+        color: white;
+        padding: 15px 25px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        animation: slideIn 0.3s ease-out forwards;
+        min-width: 250px;
+    `;
+
+    toast.innerHTML = `
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}" style="margin-right: 10px;"></i>
+        <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after 3s
+    setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease-in forwards';
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.parentElement.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// =============================================================================
+// 11. CÁC HÀM TIỆN ÍCH KHÁC
+// =============================================================================
+
 function formatPrice(price) {
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
@@ -245,170 +324,23 @@ function formatPrice(price) {
     }).format(price);
 }
 
-// Debounce function (cho tìm kiếm)
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Throttle function (cho cuộn trang)
-function throttle(func, limit) {
-    let inThrottle;
-    return function () {
-        const args = arguments;
-        const context = this;
-        if (!inThrottle) {
-            func.apply(context, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    }
-}
-
-// =============================================================================
-// 11. LAZY LOADING ẢNH - Tối ưu hóa hiệu suất tải ảnh
-// =============================================================================
-
 function initLazyLoading() {
     const lazyImages = document.querySelectorAll('img[data-src]');
-
     if (lazyImages.length === 0) return;
-
-    // Theo dõi ảnh đã tải để tránh tải lại
-    const loadedImages = new Set();
-
-    // Theo dõi element đã xử lý để tránh xử lý lại
-    const processedElements = new WeakSet();
-
-    // Giới hạn số ảnh tải cùng lúc để tránh quá tải RAM
-    let currentlyLoading = 0;
-    const MAX_CONCURRENT_LOADS = 6;
 
     const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
-
-                // QUAN TRỌNG: Ngừng theo dõi ngay để tránh trigger lại
+                img.src = img.dataset.src;
+                img.classList.remove('skeleton');
                 observer.unobserve(img);
-
-                // Bỏ qua nếu element đã xử lý
-                if (processedElements.has(img)) {
-                    return;
-                }
-
-                // Đánh dấu element đã xử lý
-                processedElements.add(img);
-
-                const imgSrc = img.dataset.src;
-
-                // Bỏ qua nếu đã tải hoặc không có source
-                if (loadedImages.has(imgSrc) || !imgSrc) {
-                    img.classList.remove('skeleton');
-                    return;
-                }
-
-                // Bỏ qua nếu đạt giới hạn đồng thời
-                if (currentlyLoading >= MAX_CONCURRENT_LOADS) {
-                    loadedImages.add(imgSrc);
-                    img.classList.remove('skeleton');
-                    return;
-                }
-
-                currentlyLoading++;
-                loadedImages.add(imgSrc);
-
-                const tempImg = new Image();
-
-                // Timeout để tránh treo
-                const loadTimeout = setTimeout(() => {
-                    tempImg.onload = null;
-                    tempImg.onerror = null;
-                    tempImg.src = '';
-                    currentlyLoading--;
-
-                    const fallback = img.getAttribute('onerror')?.match(/'([^']+)'/)?.[1];
-                    if (fallback && img.src !== fallback) {
-                        img.src = fallback;
-                    }
-                    img.classList.remove('skeleton');
-                }, 10000);
-
-                tempImg.onload = function () {
-                    clearTimeout(loadTimeout);
-                    img.src = imgSrc;
-                    img.classList.remove('skeleton');
-                    img.classList.add('loaded');
-                    img.removeAttribute('data-src');
-                    currentlyLoading--;
-
-                    tempImg.onload = null;
-                    tempImg.onerror = null;
-                };
-
-                tempImg.onerror = function () {
-                    clearTimeout(loadTimeout);
-                    currentlyLoading--;
-
-                    const fallback = img.getAttribute('onerror')?.match(/'([^']+)'/)?.[1];
-                    if (fallback && img.src !== fallback) {
-                        img.src = fallback;
-                    }
-                    img.classList.remove('skeleton');
-                    tempImg.onload = null;
-                    tempImg.onerror = null;
-                };
-
-                tempImg.src = imgSrc;
             }
         });
-    }, { rootMargin: '50px 0px', threshold: 0.01 });
+    });
 
     lazyImages.forEach(img => imageObserver.observe(img));
 }
-
-// =============================================================================
-// 12. CUỘN MƯỢT - Cuộn mượt cho anchor links
-// =============================================================================
-
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
-
-        if (href === '#') return;
-
-        e.preventDefault();
-
-        const target = document.querySelector(href);
-
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// =============================================================================
-// 13. CONSOLE BRANDING - Thông điệp thương hiệu trong console
-// =============================================================================
-
-console.log(
-    '%c🌿 FreshMart - Siêu thị thực phẩm tươi sống 🌿',
-    'color: #496C2C; font-size: 20px; font-weight: bold; padding: 10px;'
-);
-console.log(
-    '%cPhát triển bởi ❤️ FreshMart Team',
-    'color: #999; font-size: 12px;'
-);
 
 // =============================================================================
 // 14. SLIDER BANNER - Slider tự động cho banner
@@ -424,7 +356,7 @@ function initHeroSlider() {
 
     if (slides.length <= 1) return;
 
-    console.log('🎡 FreshMart Slider đã khởi tạo - 3 giây/slide');
+    // console.log('🎡 FreshMart Slider đã khởi tạo - 3 giây/slide');
 
     function showSlide(index) {
         // Xóa class active ở slide hiện tại
@@ -475,63 +407,18 @@ function initHeroSlider() {
     }
 
     // Chạy slide
-    console.log('🚀 Banner auto-slide đã khởi động');
     startTimer();
 }
 
-// Khởi tạo slider
-document.addEventListener('DOMContentLoaded', initHeroSlider);
-
-// =============================================================================
-// 15. MUA NGAY - Thêm vào giỏ và checkout ngay
-// =============================================================================
-
-/**
- * Mua ngay - Mua 1 sản phẩm và chuyển thẳng tới checkout
- * @param {number} productId - ID sản phẩm
- * @param {number} quantity - Số lượng (sẽ force = 1)
- */
-function buyNow(productId, quantity = 1) {
-    const csrfToken = document.querySelector('meta[name="csrf_token"]')?.content || '';
-    const baseUrl = document.querySelector('meta[name="base_url"]')?.content || '';
-
-    // QUAN TRỌNG: Force quantity = 1 để chỉ mua 1 sản phẩm
-    quantity = 1;
-
-    const formData = new FormData();
-    formData.append('product_id', productId);
-    formData.append('quantity', quantity);
-    formData.append('csrf_token', csrfToken);
-
-    // Gọi /cart/buyNow thay vì /cart/add
-    fetch(baseUrl + '/public/cart/buyNow', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Chuyển thẳng tới checkout
-                window.location.href = baseUrl + '/public/checkout';
-            } else {
-                if (typeof showNotification === 'function') {
-                    showNotification(data.message || 'Có lỗi xảy ra!', 'error');
-                } else {
-                    alert(data.message || 'Có lỗi xảy ra!');
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Lỗi Mua Ngay:', error);
-            if (typeof showNotification === 'function') {
-                showNotification('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
-            }
-        });
-}
+// Initialize things that were lost
+document.addEventListener('DOMContentLoaded', function () {
+    initLazyLoading();
+    if (typeof initHeroSlider === 'function') {
+        initHeroSlider();
+    }
+});
 
 // Gán vào window để HTML có thể gọi
 window.buyNow = buyNow;
 window.addToCart = addToCart;
+window.showNotification = showNotification;

@@ -17,6 +17,15 @@ class Disposal extends Model {
     protected $table = 'phieu_huy';
     protected $primaryKey = 'ID_phieu_huy';
     
+    /**
+     * Vietnamese diacritics matching (rau ≠ râu)
+     */
+    private function vietnameseMatch($text, $keyword) {
+        $text = mb_strtolower($text, 'UTF-8');
+        $keyword = mb_strtolower($keyword, 'UTF-8');
+        return mb_strpos($text, $keyword, 0, 'UTF-8') !== false;
+    }
+    
     // ==========================================================================
     // CRUD PHIẾU HỦY
     // ==========================================================================
@@ -74,7 +83,7 @@ class Disposal extends Model {
         $this->db->query($sql, [
             $disposalId,
             $item['ID_sp'],
-            $item['ID_lo_nhap'] ?? null,
+            !empty($item['ID_lo_nhap']) ? $item['ID_lo_nhap'] : null,
             $item['Ten_sp'],
             $item['So_luong'],
             $item['Gia_nhap'],
@@ -92,9 +101,17 @@ class Disposal extends Model {
      * @return array
      */
     public function getDisposals($filters = [], $limit = 20, $offset = 0) {
+        $hasKeyword = !empty($filters['keyword']);
+        $keyword = $hasKeyword ? trim($filters['keyword']) : '';
+        
+        // Also fetch product names for Vietnamese filtering
         $sql = "SELECT ph.*, tk.Ho_ten AS Ten_nguoi_tao,
                        tk2.Ho_ten AS Ten_nguoi_duyet,
-                       (SELECT COUNT(*) FROM chi_tiet_phieu_huy WHERE ID_phieu_huy = ph.ID_phieu_huy) AS So_san_pham
+                       (SELECT COUNT(*) FROM chi_tiet_phieu_huy WHERE ID_phieu_huy = ph.ID_phieu_huy) AS So_san_pham,
+                       (SELECT GROUP_CONCAT(sp.Ten SEPARATOR ', ') 
+                        FROM chi_tiet_phieu_huy ct 
+                        JOIN san_pham sp ON ct.ID_sp = sp.ID_sp 
+                        WHERE ct.ID_phieu_huy = ph.ID_phieu_huy) AS Ten_san_pham_list
                 FROM phieu_huy ph
                 INNER JOIN tai_khoan tk ON ph.Nguoi_tao = tk.ID
                 LEFT JOIN tai_khoan tk2 ON ph.Nguoi_duyet = tk2.ID
@@ -102,12 +119,19 @@ class Disposal extends Model {
         
         $params = [];
         
-        // Filter by keyword (search Ma_hien_thi or Ly_do)
-        if (!empty($filters['keyword'])) {
-            $sql .= " AND (ph.Ma_hien_thi LIKE ? OR ph.Ly_do LIKE ?)";
-            $keyword = '%' . $filters['keyword'] . '%';
-            $params[] = $keyword;
-            $params[] = $keyword;
+        // SQL LIKE for initial filtering
+        if ($hasKeyword) {
+            $sql .= " AND (ph.Ma_hien_thi LIKE ? OR ph.Ly_do LIKE ? OR EXISTS (
+                        SELECT 1 FROM chi_tiet_phieu_huy ct 
+                        JOIN san_pham sp ON ct.ID_sp = sp.ID_sp 
+                        WHERE ct.ID_phieu_huy = ph.ID_phieu_huy 
+                        AND (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ?)
+                      ))";
+            $kwLike = '%' . $keyword . '%';
+            $params[] = $kwLike;
+            $params[] = $kwLike;
+            $params[] = $kwLike;
+            $params[] = $kwLike;
         }
         
         // Filter by status
@@ -133,27 +157,105 @@ class Disposal extends Model {
             $params[] = $filters['den_ngay'];
         }
         
-        $sql .= " ORDER BY ph.Ngay_tao DESC LIMIT ? OFFSET ?";
-        $params[] = $limit;
-        $params[] = $offset;
+        $sql .= " ORDER BY ph.Ngay_tao DESC";
         
-        return $this->query($sql, $params);
+        // Fetch more if keyword for PHP filtering
+        $fetchLimit = $hasKeyword ? max($limit * 3, 60) : $limit;
+        $fetchOffset = $hasKeyword ? 0 : $offset;
+        
+        $sql .= " LIMIT ? OFFSET ?";
+        $params[] = $fetchLimit;
+        $params[] = $fetchOffset;
+        
+        $results = $this->query($sql, $params);
+        
+        // Vietnamese diacritics filter
+        if ($hasKeyword) {
+            $filtered = [];
+            foreach ($results as $row) {
+                $matchMa = $this->vietnameseMatch($row['Ma_hien_thi'] ?? '', $keyword);
+                $matchLyDo = $this->vietnameseMatch($row['Ly_do'] ?? '', $keyword);
+                $matchSP = $this->vietnameseMatch($row['Ten_san_pham_list'] ?? '', $keyword);
+                
+                if ($matchMa || $matchLyDo || $matchSP) {
+                    $filtered[] = $row;
+                }
+            }
+            return array_slice($filtered, $offset, $limit);
+        }
+        
+        return $results;
     }
     
     /**
-     * Đếm phiếu hủy với filter
+     * Đếm phiếu hủy với filter (có hỗ trợ Vietnamese)
      */
     public function countDisposals($filters = []) {
-        $sql = "SELECT COUNT(*) AS total FROM phieu_huy WHERE 1=1";
-        $params = [];
+        $hasKeyword = !empty($filters['keyword']);
+        $keyword = $hasKeyword ? trim($filters['keyword']) : '';
         
-        // Filter by keyword
-        if (!empty($filters['keyword'])) {
-            $sql .= " AND (Ma_hien_thi LIKE ? OR Ly_do LIKE ?)";
-            $keyword = '%' . $filters['keyword'] . '%';
-            $params[] = $keyword;
-            $params[] = $keyword;
+        if ($hasKeyword) {
+            // Need to count with Vietnamese match - fetch and count in PHP
+            $sql = "SELECT ph.Ma_hien_thi, ph.Ly_do,
+                           (SELECT GROUP_CONCAT(sp.Ten SEPARATOR ', ') 
+                            FROM chi_tiet_phieu_huy ct 
+                            JOIN san_pham sp ON ct.ID_sp = sp.ID_sp 
+                            WHERE ct.ID_phieu_huy = ph.ID_phieu_huy) AS Ten_san_pham_list
+                    FROM phieu_huy ph WHERE 1=1";
+            $params = [];
+            
+            // SQL LIKE for initial filter
+            $sql .= " AND (ph.Ma_hien_thi LIKE ? OR ph.Ly_do LIKE ? OR EXISTS (
+                        SELECT 1 FROM chi_tiet_phieu_huy ct 
+                        JOIN san_pham sp ON ct.ID_sp = sp.ID_sp 
+                        WHERE ct.ID_phieu_huy = ph.ID_phieu_huy 
+                        AND (sp.Ten LIKE ? OR sp.Ma_hien_thi LIKE ?)
+                      ))";
+            $kwLike = '%' . $keyword . '%';
+            $params[] = $kwLike;
+            $params[] = $kwLike;
+            $params[] = $kwLike;
+            $params[] = $kwLike;
+            
+            if (!empty($filters['trang_thai'])) {
+                $sql .= " AND ph.Trang_thai = ?";
+                $params[] = $filters['trang_thai'];
+            }
+            
+            if (!empty($filters['loai_phieu'])) {
+                $sql .= " AND ph.Loai_phieu = ?";
+                $params[] = $filters['loai_phieu'];
+            }
+            
+            if (!empty($filters['tu_ngay'])) {
+                $sql .= " AND ph.Ngay_huy >= ?";
+                $params[] = $filters['tu_ngay'];
+            }
+            
+            if (!empty($filters['den_ngay'])) {
+                $sql .= " AND ph.Ngay_huy <= ?";
+                $params[] = $filters['den_ngay'];
+            }
+            
+            $results = $this->query($sql, $params);
+            
+            // Vietnamese count
+            $count = 0;
+            foreach ($results as $row) {
+                $matchMa = $this->vietnameseMatch($row['Ma_hien_thi'] ?? '', $keyword);
+                $matchLyDo = $this->vietnameseMatch($row['Ly_do'] ?? '', $keyword);
+                $matchSP = $this->vietnameseMatch($row['Ten_san_pham_list'] ?? '', $keyword);
+                
+                if ($matchMa || $matchLyDo || $matchSP) {
+                    $count++;
+                }
+            }
+            return $count;
         }
+        
+        // No keyword - simple count
+        $sql = "SELECT COUNT(*) AS total FROM phieu_huy ph WHERE 1=1";
+        $params = [];
         
         if (!empty($filters['trang_thai'])) {
             $sql .= " AND Trang_thai = ?";
@@ -216,17 +318,47 @@ class Disposal extends Model {
     
     /**
      * Duyệt phiếu hủy (chỉ Admin)
-     * Trigger sẽ tự động trừ kho
+     * UPDATE: Cập nhật tồn kho sản phẩm (Trừ kho)
      */
     public function approve($disposalId, $approverId) {
-        $sql = "UPDATE phieu_huy 
-                SET Trang_thai = 'da_duyet', 
-                    Nguoi_duyet = ?, 
-                    Ngay_duyet = NOW()
-                WHERE ID_phieu_huy = ? AND Trang_thai = 'cho_duyet'";
-        
-        $this->db->query($sql, [$approverId, $disposalId]);
-        return $this->db->rowCount() > 0;
+        $this->beginTransaction();
+        try {
+            // 1. Cập nhật trạng thái phiếu
+            $sql = "UPDATE phieu_huy 
+                    SET Trang_thai = 'da_duyet', 
+                        Nguoi_duyet = ?, 
+                        Ngay_duyet = NOW()
+                    WHERE ID_phieu_huy = ? AND Trang_thai = 'cho_duyet'";
+            
+            $this->db->query($sql, [$approverId, $disposalId]);
+            
+            if ($this->db->rowCount() === 0) {
+                // Không tìm thấy phiếu hoặc phiếu không ở trạng thái 'cho_duyet'
+                $this->rollBack();
+                return false;
+            }
+            
+            // 2. Lấy chi tiết phiếu hủy
+            $details = $this->getDisposalDetails($disposalId);
+            
+            // 3. Trừ tồn kho - ĐÃ XỬ LÝ BỞI TRIGGER `trg_duyet_phieu_huy_tru_kho`
+            // Không thực hiện update ở đây để tránh trừ 2 lần
+            /*
+            $sqlUpdateStock = "UPDATE san_pham SET So_luong_ton = GREATEST(0, So_luong_ton - ?) WHERE ID_sp = ?";
+            
+            foreach ($details as $item) {
+                $this->db->query($sqlUpdateStock, [$item['So_luong'], $item['ID_sp']]);
+            }
+            */
+            
+            $this->commit();
+            return true;
+            
+        } catch (Exception $e) {
+            $this->rollBack();
+            error_log("Disposal::approve Error: " . $e->getMessage());
+            return false;
+        }
     }
     
     /**

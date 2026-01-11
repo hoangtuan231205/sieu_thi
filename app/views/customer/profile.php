@@ -489,10 +489,10 @@ include __DIR__ . '/../layouts/header.php';
                     <div class="profile-avatar-container" onclick="document.getElementById('avatarInput').click();">
                         <div class="profile-avatar-circle" id="avatarPreview">
                             <?php 
-                            $avatarPath = PUBLIC_PATH . '/img/avatars/' . ($user['avatar'] ?? 'default-avatar.png');
+                            $avatarPath = PUBLIC_PATH . '/assets/img/avatars/' . ($user['avatar'] ?? 'default-avatar.png');
                             if (!empty($user['avatar']) && $user['avatar'] !== 'default-avatar.png' && file_exists($avatarPath)):
                             ?>
-                                <img src="<?= asset('img/avatars/' . $user['avatar']) ?>" alt="Avatar">
+                                <img src="<?= asset('img/avatars/' . $user['avatar']) ?>?v=<?= time() ?>" alt="Avatar">
                             <?php else: ?>
                                 <i class="fas fa-user"></i>
                             <?php endif; ?>
@@ -506,7 +506,7 @@ include __DIR__ . '/../layouts/header.php';
                     </div>
                 </form>
                 
-                <p class="profile-avatar-hint">Click để chọn ảnh • JPG, PNG • Max 2MB</p>
+                <p class="profile-avatar-hint">Click để chọn ảnh • JPG, PNG • Max 10MB</p>
                 
                 <div class="profile-user-name"><?= htmlspecialchars($user['fullname'] ?? 'User') ?></div>
                 <div class="profile-member-since">Thành viên từ <?= date('Y', strtotime($user['created_at'] ?? 'now')) ?></div>
@@ -717,9 +717,9 @@ avatarInput.onchange = function(e) {
         return;
     }
     
-    // Kiểm tra kích thước file (2MB)
-    if (file.size > 2 * 1024 * 1024) {
-        showToast('Ảnh không được vượt quá 2MB', 'error');
+    // Kiểm tra kích thước file (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('Ảnh không được vượt quá 10MB', 'error');
         this.value = ''; // Xóa lựa chọn
         return;
     }
@@ -805,9 +805,12 @@ profileForm.onsubmit = async function(e) {
     formData.append('ajax', '1');
     
     try {
-        const response = await fetch(baseUrl + '/public/user/updateProfile', {
+        const response = await fetch(baseUrl + '/user/updateProfile', {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         });
         
         const result = await response.json();
@@ -835,13 +838,13 @@ window.addEventListener('beforeunload', function(e) {
 });
 
 // Hiển thị thông báo flash PHP
-<?php if (isset($_SESSION['success'])): ?>
-showToast('<?= addslashes($_SESSION['success']) ?>', 'success');
-<?php unset($_SESSION['success']); endif; ?>
+<?php if (Session::hasFlash('success')): ?>
+showToast('<?= addslashes(Session::getFlash('success')) ?>', 'success');
+<?php endif; ?>
 
-<?php if (isset($_SESSION['error'])): ?>
-showToast('<?= addslashes($_SESSION['error']) ?>', 'error');
-<?php unset($_SESSION['error']); endif; ?>
+<?php if (Session::hasFlash('error')): ?>
+showToast('<?= addslashes(Session::getFlash('error')) ?>', 'error');
+<?php endif; ?>
 </script>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>

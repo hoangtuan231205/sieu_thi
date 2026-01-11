@@ -153,6 +153,12 @@ class Order extends Model {
                          (ID_dh, ID_sp, Ten_sp, So_luong, Gia_tien, Thanh_tien, Hinh_anh, Don_gia_von, ID_chi_tiet_nhap) 
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
+            // SQL trừ kho tổng
+            $updateProductStockSql = "UPDATE san_pham SET So_luong_ton = GREATEST(0, So_luong_ton - ?) WHERE ID_sp = ?";
+            
+            // SQL trừ kho lô
+            $updateBatchStockSql = "UPDATE chi_tiet_phieu_nhap SET So_luong_con = GREATEST(0, So_luong_con - ?) WHERE ID_chi_tiet_nhap = ?";
+            
             foreach ($cartItems as $item) {
                 // FEFO Multi-Batch: Phân bổ từ nhiều lô nếu 1 lô không đủ
                 $allocations = $this->findBatchesFEFO($item['ID_sp'], $item['So_luong']);
@@ -173,6 +179,14 @@ class Order extends Model {
                         $batch['Don_gia_nhap'],            // Giá vốn từ lô
                         $batch['ID_chi_tiet_nhap']         // ID lô (cho trigger trừ kho)
                     ]);
+                    
+                    // 1. Trừ kho tổng (san_pham) - ĐÃ XỬ LÝ BỞI TRIGGER `trg_dat_hang_tru_kho`
+                    // $this->db->query($updateProductStockSql, [$batchQuantity, $item['ID_sp']]);
+                    
+                    // 2. Trừ kho lô (chi_tiet_phieu_nhap) - nếu có ID lô - ĐÃ XỬ LÝ BỞI TRIGGER
+                    // if (!empty($batch['ID_chi_tiet_nhap'])) {
+                    //    $this->db->query($updateBatchStockSql, [$batchQuantity, $batch['ID_chi_tiet_nhap']]);
+                    // }
                 }
             }
             
@@ -261,6 +275,12 @@ class Order extends Model {
                          (ID_dh, ID_sp, Ten_sp, So_luong, Gia_tien, Thanh_tien, Hinh_anh, Don_gia_von, ID_chi_tiet_nhap) 
                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
+            // SQL trừ kho tổng
+            $updateProductStockSql = "UPDATE san_pham SET So_luong_ton = GREATEST(0, So_luong_ton - ?) WHERE ID_sp = ?";
+            
+            // SQL trừ kho lô
+            $updateBatchStockSql = "UPDATE chi_tiet_phieu_nhap SET So_luong_con = GREATEST(0, So_luong_con - ?) WHERE ID_chi_tiet_nhap = ?";
+            
             foreach ($allocations as $batch) {
                 $batchQuantity = $batch['So_luong_xuat'];
                 $batchTotal = $productData['Gia_tien'] * $batchQuantity;
@@ -276,6 +296,14 @@ class Order extends Model {
                     $batch['Don_gia_nhap'],        // Giá vốn từ lô FEFO
                     $batch['ID_chi_tiet_nhap']     // ID lô (cho trigger trừ kho)
                 ]);
+                
+                // 1. Trừ kho tổng (san_pham) - ĐÃ XỬ LÝ BỞI TRIGGER
+                // $this->db->query($updateProductStockSql, [$batchQuantity, $productData['ID_sp']]);
+                
+                // 2. Trừ kho lô (chi_tiet_phieu_nhap) - nếu có ID lô - ĐÃ XỬ LÝ BỞI TRIGGER
+                // if (!empty($batch['ID_chi_tiet_nhap'])) {
+                //    $this->db->query($updateBatchStockSql, [$batchQuantity, $batch['ID_chi_tiet_nhap']]);
+                // }
             }
             
             // Commit transaction
@@ -353,18 +381,49 @@ class Order extends Model {
     /**
      * Hủy đơn hàng
      * Chỉ hủy được khi trạng thái = 'dang_xu_ly'
+     * UPDATE: Hoàn lại tồn kho khi hủy
      * 
      * @param int $orderId
      * @return bool
      */
     public function cancelOrder($orderId) {
-        $order = $this->findById($orderId);
-        
-        if (!$order || $order['Trang_thai'] !== 'dang_xu_ly') {
+        $this->db->beginTransaction();
+        try {
+            $order = $this->findById($orderId);
+            
+            if (!$order || $order['Trang_thai'] !== 'dang_xu_ly') {
+                $this->db->rollBack();
+                return false;
+            }
+            
+            // 1. Lấy chi tiết đơn hàng
+            $details = $this->getOrderDetails($orderId);
+            
+            // 2. Hoàn lại tồn kho - ĐÃ XỬ LÝ BỞI TRIGGER `trg_huy_don_hoan_kho`
+            // $sqlRefundProduct = "UPDATE san_pham SET So_luong_ton = So_luong_ton + ? WHERE ID_sp = ?";
+            // $sqlRefundBatch = "UPDATE chi_tiet_phieu_nhap SET So_luong_con = So_luong_con + ? WHERE ID_chi_tiet_nhap = ?";
+            
+            // foreach ($details as $detail) {
+            //    // Hoàn kho tổng
+            //    $this->db->query($sqlRefundProduct, [$detail['So_luong'], $detail['ID_sp']]);
+            //    
+            //    // Hoàn kho lô
+            //    if (!empty($detail['ID_chi_tiet_nhap'])) {
+            //        $this->db->query($sqlRefundBatch, [$detail['So_luong'], $detail['ID_chi_tiet_nhap']]);
+            //    }
+            // }
+            
+            // 3. Cập nhật trạng thái
+            $this->updateStatus($orderId, 'huy');
+            
+            $this->db->commit();
+            return true;
+            
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("Order::cancelOrder Error: " . $e->getMessage());
             return false;
         }
-        
-        return $this->updateStatus($orderId, 'huy');
     }
     
     /**

@@ -100,49 +100,45 @@
     </section>
 
     <!-- ============================================================================
-        FEATURES - Đặc điểm nổi bật
+        FEATURES - Đặc điểm nổi bật (Horizontal Style)
         ============================================================================ -->
     <section class="features-section">
         <div class="container">
             <div class="row g-4">
                 
-                <div class="col-lg-3 col-md-6">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-truck"></i>
-                        </div>
-                        <h5 class="feature-title">Giao hàng nhanh</h5>
-                        <p class="feature-desc">Trong 2 giờ</p>
-                    </div>
-                </div>
-                
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="fas fa-shield-alt"></i>
                         </div>
-                        <h5 class="feature-title">Cam kết chất lượng</h5>
-                        <p class="feature-desc">Hoàn tiền 100%</p>
+                        <div class="feature-content">
+                            <h5 class="feature-title">Chất lượng 100%</h5>
+                            <p class="feature-desc">Chứng nhận thực phẩm sạch chuẩn quốc tế.</p>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-headset"></i>
+                            <i class="fas fa-bolt"></i>
                         </div>
-                        <h5 class="feature-title">Hỗ trợ 24/7</h5>
-                        <p class="feature-desc">Luôn sẵn sàng</p>
+                        <div class="feature-content">
+                            <h5 class="feature-title">Giao Siêu Tốc</h5>
+                            <p class="feature-desc">Nhận hàng tươi ngon chỉ trong 2 giờ.</p>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-4 col-md-6">
                     <div class="feature-card">
                         <div class="feature-icon">
-                            <i class="fas fa-tag"></i>
+                            <i class="fas fa-exchange-alt"></i>
                         </div>
-                        <h5 class="feature-title">Giá tốt nhất</h5>
-                        <p class="feature-desc">Khuyến mãi mỗi ngày</p>
+                        <div class="feature-content">
+                            <h5 class="feature-title">Đổi trả dễ dàng</h5>
+                            <p class="feature-desc">Hoàn tiền nếu không hài lòng chất lượng.</p>
+                        </div>
                     </div>
                 </div>
                 
@@ -156,18 +152,19 @@
     <section class="products-section">
         <div class="container">
             
-            <!-- Section Header -->
+            <!-- Section Header - Tailwind Style with Green Bar -->
             <div class="section-header">
-                <h2 class="section-title">Sản phẩm bán chạy</h2>
-                <p class="section-subtitle">Được khách hàng tin dùng nhất</p>
+                <div class="section-header-left">
+                    <div class="section-header-accent"></div>
+                    <h2 class="section-title">Rau Củ Tươi Sống</h2>
+                </div>
                 <a href="<?= BASE_URL ?>/products" class="view-all-link">
-                    Xem tất cả
-                    <i class="fas fa-arrow-right ms-2"></i>
+                    Xem tất cả <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
             
-            <!-- Products Grid - 5 Columns -->
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+            <!-- Products Grid - 4 Columns (Tailwind Style) -->
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
                 
                 <?php if (!empty($best_sellers)): ?>
                     <?php foreach ($best_sellers as $product): ?>
@@ -194,9 +191,17 @@
                             
                             <!-- Product Info -->
                             <div class="product-info">
+                                <!-- Category Label -->
+                                <p class="product-category">Nông Sản Sạch</p>
+                                
                                 <a href="<?= BASE_URL ?>/products/detail/<?= $product['ID_sp'] ?>" style="text-decoration: none;">
                                     <h3 class="product-name"><?= htmlspecialchars($product['Ten']) ?></h3>
                                 </a>
+                                
+                                <!-- Price -->
+                                <div class="product-price">
+                                    <?= number_format($product['Gia_tien'], 0, ',', '.') ?>₫
+                                </div>
                                 
                                 <!-- Rating -->
                                 <div class="product-rating">
@@ -207,29 +212,24 @@
                                         <i class="fas fa-star"></i>
                                         <i class="fas fa-star-half-alt"></i>
                                     </div>
-                                    <span class="rating-value">(4.5)</span>
+                                    <span class="rating-value">(42 đánh giá)</span>
                                 </div>
-                                
-                                <!-- Price -->
-                                <div class="product-price">
-                                    <?= number_format($product['Gia_tien'], 0, ',', '.') ?>đ
-                                </div>
-                                
-                                <!-- Action Buttons -->
-                                <div class="product-actions">
-                                    <?php if ($product['So_luong_ton'] > 0): ?>
-                                        <button class="btn-add" onclick="addToCart(<?= $product['ID_sp'] ?>, 1)">
-                                            <i class="fas fa-cart-plus"></i> Thêm
-                                        </button>
-                                        <button class="btn-buy" onclick="buyNow(<?= $product['ID_sp'] ?>, 1)">
-                                            Mua ngay
-                                        </button>
-                                    <?php else: ?>
-                                        <button class="btn-add" style="grid-column: span 2; background: #9ca3af; cursor: not-allowed;" disabled>
-                                            <i class="fas fa-ban"></i> Hết hàng
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons - 2 columns -->
+                            <div class="product-actions">
+                                <?php if ($product['So_luong_ton'] > 0): ?>
+                                    <button class="btn-add" onclick="addToCart(<?= $product['ID_sp'] ?>, 1)">
+                                        <i class="fas fa-cart-plus"></i> Thêm
+                                    </button>
+                                    <button class="btn-buy" onclick="buyNow(<?= $product['ID_sp'] ?>, 1)">
+                                        Mua ngay
+                                    </button>
+                                <?php else: ?>
+                                    <button class="btn-add" style="grid-column: span 2; background: #9ca3af; cursor: not-allowed;" disabled>
+                                        <i class="fas fa-ban"></i> Hết hàng
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

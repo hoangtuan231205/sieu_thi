@@ -38,7 +38,7 @@
             
             <div class="row">
                 <!-- Main Content -->
-                <div class="col-lg-8">
+                <div class="col-lg-9">
                     <!-- Info Card -->
                     <div class="admin-card">
                         <div class="admin-card-header">
@@ -48,10 +48,11 @@
                             <div class="row g-4">
                                 <div class="col-md-6">
                                     <label class="form-label fw-medium">Loại phiếu <span class="text-danger">*</span></label>
+                                    <?php $prefillType = !empty($prefill_product) ? 'het_han' : ''; ?>
                                     <select class="form-select" name="loai_phieu" required style="border-radius: 8px; padding: 10px 14px;">
-                                        <option value="huy">Hủy bỏ</option>
+                                        <option value="huy" <?= $prefillType === '' ? 'selected' : '' ?>>Hủy bỏ</option>
                                         <option value="hong">Hư hỏng</option>
-                                        <option value="het_han">Hết hạn</option>
+                                        <option value="het_han" <?= $prefillType === 'het_han' ? 'selected' : '' ?>>Hết hạn</option>
                                         <option value="dieu_chinh">Điều chỉnh kiểm kê</option>
                                     </select>
                                 </div>
@@ -61,7 +62,7 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-medium">Lý do <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" name="ly_do" rows="3" placeholder="Mô tả chi tiết lý do hủy hàng..." required style="border-radius: 8px; padding: 12px 14px;"></textarea>
+                                    <textarea class="form-control" name="ly_do" rows="3" placeholder="Mô tả chi tiết lý do hủy hàng..." required style="border-radius: 8px; padding: 12px 14px;"><?= htmlspecialchars($prefill_reason ?? '') ?></textarea>
                                 </div>
                             </div>
                         </div>
@@ -74,10 +75,10 @@
                         </div>
                         <div class="admin-card-body">
                             <!-- Search Box -->
-                            <div class="admin-search-box" style="margin-bottom: 20px; max-width: 100%;">
+                            <div class="admin-search-box" style="margin-bottom: 20px; max-width: 100%; border: none; box-shadow: none; background: #f8fafc;">
                                 <i class="fas fa-search"></i>
-                                <input type="text" id="productSearch" placeholder="Tìm sản phẩm theo tên hoặc mã...">
-                                <div id="productSuggestions" style="position: absolute; width: 100%; z-index: 100; background: white; border: 1px solid var(--admin-border); border-radius: 10px; margin-top: 4px; max-height: 300px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.1);"></div>
+                                <input type="text" id="productSearch" placeholder="Tìm sản phẩm theo tên hoặc mã..." style="background: transparent; border: none;">
+                                <div id="productSuggestions" style="position: absolute; width: 100%; z-index: 100; background: white; border-radius: 10px; margin-top: 4px; max-height: 300px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.15);"></div>
                             </div>
                             
                             <!-- Items Table -->
@@ -113,7 +114,7 @@
                 </div>
                 
                 <!-- Sidebar -->
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                     <div class="admin-card" style="position: sticky; top: 20px;">
                         <div class="admin-card-body">
                             <!-- Info Alert -->
@@ -173,7 +174,7 @@ searchInput.addEventListener('input', function() {
     if (q.length < 2) { suggestions.style.display = 'none'; return; }
     
     searchTimeout = setTimeout(() => {
-        fetch(baseUrl + '/public/admin/search-product-for-disposal?q=' + encodeURIComponent(q))
+        fetch(baseUrl + '/admin/search-product-for-disposal?q=' + encodeURIComponent(q))
         .then(r => r.json())
         .then(data => {
             if (data.length === 0) {
@@ -206,13 +207,20 @@ document.addEventListener('click', e => {
 function selectProduct(product) {
     suggestions.style.display = 'none';
     searchInput.value = '';
-    fetch(baseUrl + '/public/admin/get-product-batches?product_id=' + product.ID_sp)
+    fetch(baseUrl + '/admin/get-product-batches?product_id=' + product.ID_sp)
     .then(r => r.json())
     .then(batches => addProductRow(product, batches));
 }
 
-function addProductRow(product, batches) {
+function addProductRow(product, batches, prefillQty = 1) {
     document.getElementById('noItemRow')?.remove();
+    
+    // Determine price: from batches or from product
+    let defaultPrice = product.Gia_nhap || 0;
+    if (batches.length > 0 && batches[0].Don_gia_nhap) {
+        defaultPrice = batches[0].Don_gia_nhap;
+    }
+    
     const batchOptions = batches.length > 0 
         ? batches.map(b => `<option value="${b.ID_chi_tiet_nhap}" data-price="${b.Don_gia_nhap}">${b.Ma_phieu_nhap} (${b.So_luong_con})</option>`).join('')
         : '<option value="">Không có lô</option>';
@@ -225,12 +233,12 @@ function addProductRow(product, batches) {
             <div style="font-size: 13px; color: var(--admin-text-muted);">${product.Ten}</div>
             <input type="hidden" name="items[${itemIndex}][ID_sp]" value="${product.ID_sp}">
             <input type="hidden" name="items[${itemIndex}][Ten_sp]" value="${product.Ten}">
-            <input type="hidden" name="items[${itemIndex}][Gia_nhap]" value="${product.Gia_nhap}" id="price_${itemIndex}">
+            <input type="hidden" name="items[${itemIndex}][Gia_nhap]" value="${defaultPrice}" id="price_${itemIndex}">
         </td>
-        <td><select class="form-select form-select-sm" name="items[${itemIndex}][ID_lo_nhap]" onchange="updateBatchPrice(${itemIndex}, this)" style="border-radius: 6px;">${batchOptions}</select></td>
-        <td><input type="number" class="form-control form-control-sm" name="items[${itemIndex}][So_luong]" min="1" value="1" onchange="updateRowTotal(${itemIndex})" required style="border-radius: 6px; text-align: center;"></td>
-        <td id="priceDisplay_${itemIndex}">${Number(product.Gia_nhap).toLocaleString()}đ</td>
-        <td id="rowTotal_${itemIndex}" style="font-weight: 600;">${Number(product.Gia_nhap).toLocaleString()}đ</td>
+        <td><select class="form-select form-select-sm" name="items[${itemIndex}][ID_lo_nhap]" onchange="updateBatchPrice(${itemIndex}, this)" style="border-radius: 6px; min-width: 180px; font-weight: 500;">${batchOptions}</select></td>
+        <td><input type="number" class="form-control form-control-sm" name="items[${itemIndex}][So_luong]" min="1" value="${prefillQty}" onchange="updateRowTotal(${itemIndex})" required style="border-radius: 6px; text-align: center;"></td>
+        <td id="priceDisplay_${itemIndex}">${Number(defaultPrice).toLocaleString()}đ</td>
+        <td id="rowTotal_${itemIndex}" style="font-weight: 600;">${Number(defaultPrice * prefillQty).toLocaleString()}đ</td>
         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(${itemIndex})" style="border-radius: 6px;"><i class="fas fa-trash"></i></button></td>
     `;
     document.getElementById('itemsBody').appendChild(row);
@@ -283,6 +291,38 @@ document.getElementById('disposalForm').addEventListener('submit', function(e) {
         e.preventDefault();
         showNotification('Vui lòng thêm ít nhất 1 sản phẩm', 'error');
     }
+});
+
+// Auto-add product from prefill data (từ trang cảnh báo hết hạn)
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if (!empty($prefill_product)): ?>
+    // Add prefilled product automatically (từ trang cảnh báo hết hạn)
+    const product = {
+        ID_sp: <?= (int)$prefill_product['ID_sp'] ?>,
+        Ma_hien_thi: '<?= addslashes($prefill_product['Ma_hien_thi'] ?? '') ?>',
+        Ten: '<?= addslashes($prefill_product['Ten'] ?? '') ?>',
+        Don_vi_tinh: '<?= addslashes($prefill_product['Don_vi_tinh'] ?? '') ?>',
+        So_luong_ton: <?= (int)($prefill_product['So_luong_ton'] ?? 0) ?>,
+        Gia_nhap: <?= (int)($prefill_price ?? 0) ?>
+    };
+    
+    // Create batches array with prefilled batch info
+    const prefillBatches = [];
+    <?php if (!empty($prefill_batch_code)): ?>
+    prefillBatches.push({
+        ID_chi_tiet_nhap: <?= (int)($prefill_batch_id ?? 0) ?>,
+        Ma_phieu_nhap: '<?= addslashes($prefill_batch_code ?? '') ?>',
+        So_luong_con: <?= (int)$prefill_quantity ?>,
+        Don_gia_nhap: <?= (int)($prefill_price ?? 0) ?>
+    });
+    <?php endif; ?>
+    
+    selectedProduct = product;
+    addProductRow(product, prefillBatches, <?= (int)$prefill_quantity ?>);
+    
+    // Show success notification
+    showNotification('Đã tự động thêm sản phẩm "' + product.Ten + '" - Số lượng: <?= (int)$prefill_quantity ?>', 'success');
+    <?php endif; ?>
 });
 </script>
 

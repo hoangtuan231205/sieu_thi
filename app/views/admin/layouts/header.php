@@ -41,7 +41,7 @@
         <?php include __DIR__ . '/sidebar.php'; ?>
         
         <!-- Main Content -->
-        <div class="admin-main" style="margin-left:260px !important; min-height:100vh !important;">
+        <div class="admin-main" style="margin-left:260px !important; height:100vh; overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column;">
             <!-- Header -->
             <?php include __DIR__ . '/admin_header.php'; ?>
             

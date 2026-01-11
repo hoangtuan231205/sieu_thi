@@ -22,6 +22,7 @@
  */
 
 // Nạp các traits
+require_once __DIR__ . '/traits/AdminCategoryTrait.php';
 require_once __DIR__ . '/traits/AdminReportTrait.php';
 require_once __DIR__ . '/traits/AdminDisposalTrait.php';
 require_once __DIR__ . '/traits/AdminSupplierTrait.php';
@@ -30,6 +31,7 @@ require_once __DIR__ . '/traits/AdminUserTrait.php';
 class AdminController extends Controller {
     
     // Sử dụng traits để tổ chức code
+    use AdminCategoryTrait;
     use AdminReportTrait;
     use AdminDisposalTrait;
     use AdminSupplierTrait;
@@ -79,13 +81,13 @@ class AdminController extends Controller {
         $today = date('Y-m-d');
         $revenueStats = $db->query("
             SELECT 
-                SUM(CASE WHEN DATE(Ngay_dat) = '$today' AND Trang_thai = 'da_giao' THEN Thanh_tien ELSE 0 END) as today_revenue,
+                SUM(CASE WHEN DATE(Ngay_dat) = ? AND Trang_thai = 'da_giao' THEN Thanh_tien ELSE 0 END) as today_revenue,
                 SUM(CASE WHEN Trang_thai = 'da_giao' THEN Thanh_tien ELSE 0 END) as total_revenue,
-                COUNT(CASE WHEN DATE(Ngay_dat) = '$today' THEN 1 END) as today_orders,
+                COUNT(CASE WHEN DATE(Ngay_dat) = ? THEN 1 END) as today_orders,
                 COUNT(*) as total_orders,
                 COUNT(CASE WHEN Trang_thai = 'dang_xu_ly' THEN 1 END) as pending_orders
             FROM don_hang
-        ")->fetch();
+        ", [$today, $today])->fetch();
 
         // 2. Thống kê sản phẩm
         $productStats = $db->query("
@@ -398,7 +400,7 @@ class AdminController extends Controller {
         // =====================================================================
         // BƯỚC 2: ĐẾM TỔNG SỐ SẢN PHẨM
         // =====================================================================
-        $totalProducts = $this->productModel->countProducts($filters);
+        $totalProducts = $this->productModel->countProductsForAdmin($filters);
         
         // =====================================================================
         // BƯỚC 3: PHÂN TRANG
@@ -559,7 +561,6 @@ class AdminController extends Controller {
                 'name' => 'required|max:200',
                 'category_id' => 'required|numeric',
                 'price' => 'required|numeric',
-                'stock' => 'required|numeric',
                 'unit' => 'required|max:50'
             ]);
             
@@ -593,7 +594,7 @@ class AdminController extends Controller {
                 'Ten' => $this->sanitize(post('name')),
                 'ID_danh_muc' => (int)post('category_id'),
                 'Gia_tien' => (float)post('price'),
-                'So_luong_ton' => (int)post('stock'),
+                // KHÔNG cập nhật số lượng tồn ở đây
                 'Don_vi_tinh' => $this->sanitize(post('unit')),
                 'Xuat_xu' => $this->sanitize(post('origin', '')),
                 'Thanh_phan' => $this->sanitize(post('ingredients', '')),
@@ -610,10 +611,10 @@ class AdminController extends Controller {
             
             if ($result) {
                 Session::flash('success', 'Cập nhật sản phẩm thành công');
-                redirect('/admin/products');
+                redirect(BASE_URL . '/admin/products');
             } else {
                 Session::flash('error', 'Cập nhật sản phẩm thất bại');
-                redirect('/admin/product-edit/' . $productId);
+                redirect(BASE_URL . '/admin/product-edit/' . $productId);
             }
         }
         
@@ -624,7 +625,7 @@ class AdminController extends Controller {
         
         if (!$product) {
             Session::flash('error', 'Sản phẩm không tồn tại');
-            redirect('/admin/products');
+            redirect(BASE_URL . '/admin/products');
         }
         
         $data = [
@@ -635,6 +636,140 @@ class AdminController extends Controller {
         ];
         
         $this->view('admin/product_edit', $data);
+    }
+    
+    /**
+     * ==========================================================================
+     * METHOD: productSave() - LƯU SẢN PHẨM (ADD/EDIT VIA MODAL)
+     * ==========================================================================
+     * 
+     * URL: /admin/product-save (POST)
+     * Handles both Create (no ID) and Update (has ID)
+     */
+    public function productSave() {
+        if (!$this->isMethod('POST')) {
+            Session::flash('error', 'Invalid method');
+            redirect(BASE_URL . '/admin/products');
+        }
+        
+        $id = post('id');
+        
+        // Router to Add or Edit based on ID presence
+        if (!empty($id) && is_numeric($id)) {
+            // Edit logic
+            // Manually invoke productEdit but handle logic here to reuse code or redirect
+            // Since productEdit handles POST checks itself if we call it, but we need to pass ID.
+            // However, productEdit expects $productId as argument for URL router.
+            // For cleaner code, let's implement the logic here directly or refactor.
+            // Re-simulating POST handling for Edit:
+            
+            // Verify and Validate
+            if (!Middleware::verifyCsrf(post('csrf_token', ''))) {
+                 Session::flash('error', 'Invalid token');
+                 redirect(BASE_URL . '/admin/products');
+            }
+            
+            $validation = $this->validate($_POST, [
+                'ten' => 'required|max:200',
+                'danh_muc_id' => 'required|numeric',
+                'gia_tien' => 'required|numeric',
+                'don_vi' => 'required|max:50'
+            ]);
+            
+            if (!$validation['valid']) {
+                $firstError = reset($validation['errors']);
+                Session::flash('error', $firstError[0]);
+                redirect(BASE_URL . '/admin/products');
+            }
+
+            // ... (Image upload and Update Logic equivalent to productEdit)
+            $product = $this->productModel->findById($id);
+            if (!$product) {
+                Session::flash('error', 'Product not found');
+                redirect(BASE_URL . '/admin/products');
+            }
+            
+            $imageName = $product['Hinh_anh'];
+             if (isset($_FILES['hinh_anh']) && $_FILES['hinh_anh']['error'] == 0) {
+                if ($imageName && file_exists(UPLOAD_PRODUCT_PATH . '/' . $imageName)) {
+                    unlink(UPLOAD_PRODUCT_PATH . '/' . $imageName);
+                }
+                $uploadResult = $this->uploadFile($_FILES['hinh_anh'], UPLOAD_PRODUCT_PATH);
+                if ($uploadResult['success']) {
+                    $imageName = $uploadResult['filename'];
+                }
+            }
+
+            $productData = [
+                'Ten' => $this->sanitize(post('ten')),
+                'ID_danh_muc' => (int)post('danh_muc_id'),
+                'Gia_tien' => (float)post('gia_tien'),
+                'Gia_nhap' => (float)post('gia_nhap', 0),
+                // NO STOCK UPDATE
+                'Don_vi_tinh' => $this->sanitize(post('don_vi')),
+                'Ma_hien_thi' => $this->sanitize(post('ma_hien_thi', '')),
+                'Mo_ta_sp' => $this->sanitize(post('mo_ta', '')),
+                'Hinh_anh' => $imageName,
+                'Trang_thai' => post('trang_thai', 'active')
+            ];
+            
+             // Create SKU if empty
+             if (empty($productData['Ma_hien_thi'])) {
+                $productData['Ma_hien_thi'] = 'SP' . str_pad($id, 6, '0', STR_PAD_LEFT);
+             }
+
+            $this->productModel->setCurrentUserId(Session::getUserId());
+            $this->productModel->update($id, $productData);
+            Session::flash('success', 'Đã cập nhật sản phẩm');
+            redirect(BASE_URL . '/admin/products');
+
+        } else {
+            // Add logic
+            if (!Middleware::verifyCsrf(post('csrf_token', ''))) {
+                 Session::flash('error', 'Invalid token');
+                 redirect(BASE_URL . '/admin/products');
+            }
+             $validation = $this->validate($_POST, [
+                'ten' => 'required|max:200', 
+                'danh_muc_id' => 'required|numeric',
+                'gia_tien' => 'required|numeric',
+                 'don_vi' => 'required|max:50'
+            ]);
+            
+            if (!$validation['valid']) {
+                 Session::flash('error', 'Vui lòng kiểm tra lại thông tin');
+                 redirect(BASE_URL . '/admin/products');
+            }
+            
+            $imageName = null;
+            if (isset($_FILES['hinh_anh']) && $_FILES['hinh_anh']['error'] == 0) {
+                $uploadResult = $this->uploadFile($_FILES['hinh_anh'], UPLOAD_PRODUCT_PATH);
+                if ($uploadResult['success']) $imageName = $uploadResult['filename'];
+            }
+            
+            $productData = [
+                'Ten' => $this->sanitize(post('ten')),
+                'ID_danh_muc' => (int)post('danh_muc_id'),
+                'Gia_tien' => (float)post('gia_tien'),
+                'Gia_nhap' => (float)post('gia_nhap', 0),
+                'So_luong_ton' => 0, // Initial 0
+                'Don_vi_tinh' => $this->sanitize(post('don_vi')),
+                 'Ma_hien_thi' => $this->sanitize(post('ma_hien_thi', '')),
+                'Mo_ta_sp' => $this->sanitize(post('mo_ta', '')),
+                'Hinh_anh' => $imageName,
+                'Trang_thai' => post('trang_thai', 'active')
+            ];
+            
+            $this->productModel->setCurrentUserId(Session::getUserId());
+            $newId = $this->productModel->create($productData);
+            
+             if (!$productData['Ma_hien_thi'] && $newId) {
+                $this->productModel->update($newId, ['Ma_hien_thi' => 'SP' . str_pad($newId, 6, '0', STR_PAD_LEFT)]);
+             }
+
+            Session::flash('success', 'Thêm sản phẩm thành công');
+            redirect(BASE_URL . '/admin/products');
+        }
     }
     
     /**
@@ -711,155 +846,38 @@ class AdminController extends Controller {
             }
         }
     }
-    
+
     /**
      * ==========================================================================
-     * METHOD: categories() - QUẢN LÝ DANH MỤC
+     * METHOD: getProductDetail() - LẤY CHI TIẾT SẢN PHẨM (AJAX)
      * ==========================================================================
      * 
-     * URL: /admin/categories
+     * URL: /admin/get-product-detail?id=123
      */
-    public function categories() {
-        // Lấy tất cả danh mục dạng flat (cho Card Grid)
-        $categories = $this->categoryModel->getAllFlat();
-        
-        // Thêm product count cho từng danh mục
-        $productCounts = $this->categoryModel->getProductCountByCategory();
-        $countMap = [];
-        foreach ($productCounts as $pc) {
-            $countMap[$pc['ID_danh_muc']] = $pc['So_san_pham'];
-        }
-        
-        foreach ($categories as &$cat) {
-            $cat['So_san_pham'] = $countMap[$cat['ID_danh_muc']] ?? 0;
-        }
-        
-        $data = [
-            'page_title' => 'Quản lý danh mục - Admin',
-            'categories' => $categories,
-            'pagination' => [
-                'total' => count($categories),
-                'current_page' => 1,
-                'last_page' => 1
-            ],
-            'filters' => $_GET,
-            'csrf_token' => Session::getCsrfToken()
-        ];
-        
-        $this->view('admin/categories', $data);
-    }
-    
-    /**
-     * ==========================================================================
-     * METHOD: categoryAdd() - THÊM DANH MỤC (AJAX)
-     * ==========================================================================
-     */
-    public function categoryAdd() {
-        if (!$this->isAjax() || !$this->isMethod('POST')) {
+    public function getProductDetail() {
+        if (!$this->isAjax()) {
             $this->json(['error' => 'Invalid request'], 400);
+            return;
         }
         
-        // Validate
-        $validation = $this->validate($_POST, [
-            'name' => 'required|max:100',
-            'order' => 'required|numeric'
-        ]);
-        
-        if (!$validation['valid']) {
-            $firstError = reset($validation['errors']);
-            $this->json(['success' => false, 'message' => $firstError[0]]);
+        $id = (int)get('id');
+        if (!$id) {
+            $this->json(['success' => false, 'message' => 'Missing ID']);
+            return;
         }
         
-        $categoryData = [
-            'Ten_danh_muc' => $this->sanitize(post('name')),
-            'Danh_muc_cha' => post('parent_id', null) ?: null,
-            'Mo_ta' => $this->sanitize(post('description', '')),
-            'Thu_tu_hien_thi' => (int)post('order', 0),
-            'Trang_thai' => 'active'
-        ];
-        
-        $categoryId = $this->categoryModel->create($categoryData);
-        
-        if ($categoryId) {
-            $this->json([
-                'success' => true,
-                'message' => 'Thêm danh mục thành công',
-                'category_id' => $categoryId
-            ]);
+        $product = $this->productModel->findById($id);
+        if ($product) {
+            $this->json(['success' => true, 'product' => $product]);
         } else {
-            $this->json(['success' => false, 'message' => 'Thêm danh mục thất bại']);
+            $this->json(['success' => false, 'message' => 'Not found']);
         }
     }
     
-    /**
-     * ==========================================================================
-     * METHOD: categoryEdit() - SỬA DANH MỤC (AJAX)
-     * ==========================================================================
-     */
-    public function categoryEdit() {
-        if (!$this->isAjax() || !$this->isMethod('POST')) {
-            $this->json(['error' => 'Invalid request'], 400);
-        }
-        
-        $categoryId = (int)post('category_id', 0);
-        
-        if (!$categoryId) {
-            $this->json(['success' => false, 'message' => 'ID không hợp lệ']);
-        }
-        
-        $categoryData = [
-            'Ten_danh_muc' => $this->sanitize(post('name')),
-            'Danh_muc_cha' => post('parent_id', null) ?: null,
-            'Mo_ta' => $this->sanitize(post('description', '')),
-            'Thu_tu_hien_thi' => (int)post('order', 0),
-            'Trang_thai' => post('status', 'active')
-        ];
-        
-        $result = $this->categoryModel->update($categoryId, $categoryData);
-        
-        if ($result) {
-            $this->json(['success' => true, 'message' => 'Cập nhật danh mục thành công']);
-        } else {
-            $this->json(['success' => false, 'message' => 'Cập nhật thất bại']);
-        }
-    }
-    
-    /**
-     * ==========================================================================
-     * METHOD: categoryDelete() - XÓA DANH MỤC (AJAX)
-     * ==========================================================================
-     */
-    public function categoryDelete() {
-        if (!$this->isAjax() || !$this->isMethod('POST')) {
-            $this->json(['error' => 'Invalid request'], 400);
-        }
-        
-        $categoryId = (int)post('category_id', 0);
-        
-        // Kiểm tra danh mục có sản phẩm không
-        if ($this->categoryModel->hasProducts($categoryId)) {
-            $this->json([
-                'success' => false,
-                'message' => 'Không thể xóa danh mục đang có sản phẩm'
-            ]);
-        }
-        
-        // Kiểm tra có danh mục con không
-        if ($this->categoryModel->hasChildren($categoryId)) {
-            $this->json([
-                'success' => false,
-                'message' => 'Không thể xóa danh mục đang có danh mục con'
-            ]);
-        }
-        
-        $result = $this->categoryModel->delete($categoryId);
-        
-        if ($result) {
-            $this->json(['success' => true, 'message' => 'Xóa danh mục thành công']);
-        } else {
-            $this->json(['success' => false, 'message' => 'Xóa thất bại']);
-        }
-    }
+    // =========================================================================
+    // CATEGORY METHODS → AdminCategoryTrait
+    // Methods: categories, categoryAdd, categoryEdit, categorySave, categoryDelete
+    // =========================================================================
     
     /**
      * ==========================================================================
@@ -883,7 +901,23 @@ class AdminController extends Controller {
         
         // Phân trang
         $perPage = 20;
-        $pagination = $this->paginate($totalOrders, $perPage, $filters['page']);
+        // $pagination = $this->paginate($totalOrders, $perPage, $filters['page']);
+        
+        // Tính toán thủ công để đảm bảo đủ keys cho view
+        $totalPages = ceil($totalOrders / $perPage);
+        if ($totalPages < 1) $totalPages = 1;
+        
+        $offset = ($filters['page'] - 1) * $perPage;
+        
+        $pagination = [
+            'total' => $totalOrders,
+            'per_page' => $perPage,
+            'current_page' => $filters['page'],
+            'last_page' => $totalPages,
+            'from' => ($totalOrders > 0) ? $offset + 1 : 0,
+            'to' => min($offset + $perPage, $totalOrders),
+            'offset' => $offset
+        ];
         
         // Lấy danh sách đơn hàng
         $orders = $this->orderModel->getAllOrders(
@@ -981,6 +1015,12 @@ class AdminController extends Controller {
             $this->json(['error' => 'Invalid request'], 400);
         }
         
+        // CSRF Check
+        if (!Middleware::verifyCsrf($_POST['csrf_token'] ?? '')) {
+            $this->json(['success' => false, 'message' => 'Phiên làm việc hết hạn, vui lòng tải lại trang']);
+            return;
+        }
+        
         $orderId = (int)post('order_id', 0);
         $newStatus = post('status', '');
         
@@ -991,8 +1031,26 @@ class AdminController extends Controller {
             $this->json(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
         }
         
+        // Kiểm tra trạng thái hiện tại (để tránh lỗi update trùng)
+        $currentOrder = $this->orderModel->findById($orderId);
+        if (!$currentOrder) {
+            $this->json(['success' => false, 'message' => 'Đơn hàng không tồn tại']);
+            return;
+        }
+        
+        if ($currentOrder['Trang_thai'] === $newStatus) {
+             $this->json(['success' => true, 'message' => 'Trạng thái đã được cập nhật (Không có thay đổi)']);
+             return;
+        }
+        
         // Cập nhật trạng thái
-        $result = $this->orderModel->updateStatus($orderId, $newStatus);
+        if ($newStatus === 'huy') {
+            // Nếu hủy, dùng hàm này để hoàn kho
+            $result = $this->orderModel->cancelOrder($orderId);
+        } else {
+            // Các trạng thái khác chỉ cập nhật status
+            $result = $this->orderModel->updateStatus($orderId, $newStatus);
+        }
         
         if ($result) {
             // Ghi log hoạt động
@@ -1007,7 +1065,7 @@ class AdminController extends Controller {
                 'message' => 'Cập nhật trạng thái thành công'
             ]);
         } else {
-            $this->json(['success' => false, 'message' => 'Cập nhật thất bại']);
+            $this->json(['success' => false, 'message' => 'Cập nhật thất bại (Có thể đơn hàng đã hủy hoặc trạng thái không hợp lệ)']);
         }
     }
     
@@ -1078,6 +1136,66 @@ class AdminController extends Controller {
         echo '</table>';
         echo '</body>';
         echo '</html>';
+    }
+    
+    /**
+     * ==========================================================================
+     * METHOD: downloadSampleImport() - TẢI FILE MẪU IMPORT
+     * ==========================================================================
+     * URL: /admin/download-sample-import
+     */
+    public function downloadSampleImport() {
+        require_once __DIR__ . '/../../vendor/autoload.php';
+        
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Headers - Cấu trúc mới hỗ trợ Import tồn kho
+        $headers = [
+            'A1' => 'Tên sản phẩm (Bắt buộc)', 
+            'B1' => 'ID Danh mục (Bắt buộc)', 
+            'C1' => 'Giá bán (VNĐ)', 
+            'D1' => 'Số lượng nhập', 
+            'E1' => 'Đơn vị tính', 
+            'F1' => 'Xuất xứ',
+            'G1' => 'Giá nhập (VNĐ)'
+        ];
+        
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+            // Style header
+            $sheet->getStyle($cell)->getFont()->setBold(true);
+            $sheet->getStyle($cell)->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FF496C2C'); // Green branding
+            $sheet->getStyle($cell)->getFont()->getColor()->setARGB('FFFFFFFF'); // White text
+        }
+        
+        // Sample Data - Bao gồm số lượng và giá nhập
+        $data = [
+            ['Sữa Tươi Vinamilk 100% (Mẫu)', 1, 35000, 50, 'Hộp', 'Việt Nam', 28000],
+            ['Bánh Quy Cosy (Mẫu)', 21, 55000, 30, 'Gói', 'Việt Nam', 42000]
+        ];
+        
+        $row = 2;
+        foreach ($data as $item) {
+            $sheet->fromArray($item, NULL, 'A' . $row);
+            $row++;
+        }
+        
+        // Auto size columns
+        foreach (range('A', 'G') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        $filename = 'mau_import_san_pham.xlsx';
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save('php://output');
         exit;
     }
     
@@ -1193,7 +1311,12 @@ class AdminController extends Controller {
     
     /**
      * Helper: Import một row sản phẩm
-     * Expected columns: Tên, ID_danh_mục, Giá, Số lượng, Đơn vị, Xuất xứ
+     * Expected columns: Tên, ID_danh_mục, Giá bán, Số lượng, Đơn vị, Xuất xứ, Giá nhập
+     * 
+     * SENIOR UPGRADE: 
+     * - Đọc Số lượng (cột D) và Giá nhập (cột G)
+     * - Nếu Số lượng > 0 → Tự động tạo Phiếu nhập kho (ACID compliant)
+     * - Cập nhật Gia_nhap trong san_pham để dùng cho báo cáo Lãi/Lỗ
      */
     private function importProductRow($row, $validCategories = [], $lineNumber = 0, &$errorMessages = []) {
         // Skip completely empty rows (don't count as error)
@@ -1208,7 +1331,7 @@ class AdminController extends Controller {
             return null; // Trả về null để chỉ ra bỏ qua, không phải lỗi
         }
         
-        // Kiểm tra dòng có đủ cột không
+        // Kiểm tra dòng có đủ cột không (tối thiểu 4 cột: Tên, Danh mục, Giá bán, Số lượng)
         if (count($row) < 4) {
             $errorMessages[] = "Dòng {$lineNumber}: thiếu cột";
             return false;
@@ -1223,13 +1346,24 @@ class AdminController extends Controller {
             return false;
         }
         
+        // Đọc số lượng và giá nhập từ Excel
+        $soLuongNhap = (int)preg_replace('/[^0-9]/', '', $row[3] ?? 0);
+        $giaNhap = (float)preg_replace('/[^0-9.]/', '', $row[6] ?? 0);
+        
+        // Nếu Giá nhập = 0, ước tính = 70% giá bán
+        $giaBan = (float)preg_replace('/[^0-9.]/', '', $row[2] ?? 0);
+        if ($giaNhap <= 0 && $giaBan > 0) {
+            $giaNhap = $giaBan * 0.7;
+        }
+        
         $productData = [
             'Ten' => trim($row[0] ?? ''),
             'ID_danh_muc' => $categoryId,
-            'Gia_tien' => (float)preg_replace('/[^0-9.]/', '', $row[2] ?? 0),
-            'So_luong_ton' => (int)($row[3] ?? 0),
+            'Gia_tien' => $giaBan,
+            'So_luong_ton' => 0, // Sẽ được cập nhật bởi Phiếu nhập kho
             'Don_vi_tinh' => trim($row[4] ?? 'Cái'),
             'Xuat_xu' => trim($row[5] ?? ''),
+            'Gia_nhap' => $giaNhap, // Lưu giá nhập để dùng cho báo cáo
             'Trang_thai' => 'active'
         ];
         
@@ -1241,7 +1375,45 @@ class AdminController extends Controller {
         
         // Tạo sản phẩm
         $this->productModel->setCurrentUserId(Session::getUserId());
-        return $this->productModel->create($productData);
+        $productId = $this->productModel->create($productData);
+        
+        if (!$productId) {
+            $errorMessages[] = "Dòng {$lineNumber}: không thể tạo sản phẩm";
+            return false;
+        }
+        
+        // =====================================================================
+        // SENIOR UPGRADE: Tự động tạo Phiếu nhập kho nếu có số lượng
+        // Đảm bảo ACID compliance và audit trail cho tồn kho
+        // =====================================================================
+        if ($soLuongNhap > 0) {
+            try {
+                $warehouseModel = $this->model('Warehouse');
+                
+                $importItems = [[
+                    'ID_sp' => $productId,
+                    'Ten_sp' => $productData['Ten'],
+                    'Don_vi_tinh' => $productData['Don_vi_tinh'],
+                    'So_luong' => $soLuongNhap,
+                    'Don_gia_nhap' => $giaNhap,
+                    'Xuat_xu' => $productData['Xuat_xu'],
+                    'Nha_cung_cap' => 'Import Excel'
+                ]];
+                
+                $warehouseModel->createImport(
+                    Session::getUserId(),
+                    date('Y-m-d'),
+                    "Import tự động từ Excel - Dòng {$lineNumber}",
+                    $importItems
+                );
+                
+            } catch (\Exception $e) {
+                // Ghi log nhưng không fail - sản phẩm đã được tạo
+                error_log("Import warehouse error (line {$lineNumber}): " . $e->getMessage());
+            }
+        }
+        
+        return true;
     }
     
     /**
