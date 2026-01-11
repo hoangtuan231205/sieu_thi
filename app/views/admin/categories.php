@@ -164,7 +164,7 @@ function getCategoryIcon($name) {
                             <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-light);"></i>
                             <input type="text" name="keyword" class="form-control" placeholder="Tìm kiếm danh mục..." 
                                    value="<?= htmlspecialchars($filters['keyword'] ?? '') ?>"
-                                   style="padding-left: 36px;">
+                                   style="padding-left: 42px;">
                         </div>
                     </div>
                 </form>

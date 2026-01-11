@@ -246,7 +246,7 @@ if (!empty($filters['category_id']) && !empty($categories)) {
 }
 
 .product-badge.new {
-    background: #496C2C;
+    background: #7BC043;
 }
 
 .product-image {

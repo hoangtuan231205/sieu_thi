@@ -842,12 +842,35 @@ class Product extends Model {
     
     /**
      * Tìm kiếm sản phẩm cho phiếu hủy
+     * FIX: Loại trừ sản phẩm đã có phiếu hủy chờ duyệt (với ID_lo_nhap = NULL)
+     * Điều này đảm bảo rule "chỉ hủy 1 lần"
+     * 
      * @param string $keyword
      * @param int $limit
      * @return array
      */
     public function searchForDisposal($keyword, $limit = 20) {
-        return $this->searchForWarehouse($keyword, $limit);
+        // Lấy kết quả từ searchForWarehouse
+        $results = $this->searchForWarehouse($keyword, $limit * 2);
+        
+        // Lấy danh sách ID sản phẩm đã có phiếu hủy (chờ duyệt HOẶC đã duyệt) với ID_lo_nhap = NULL
+        // Chỉ khi từ chối (tu_choi) mới hiện lại
+        $excludedIds = $this->db->query("SELECT DISTINCT cth.ID_sp 
+            FROM chi_tiet_phieu_huy cth 
+            JOIN phieu_huy ph ON cth.ID_phieu_huy = ph.ID_phieu_huy 
+            WHERE ph.Trang_thai IN ('cho_duyet', 'da_duyet') 
+            AND cth.ID_lo_nhap IS NULL")->fetchAll(PDO::FETCH_COLUMN);
+        
+        // Lọc bỏ sản phẩm đã trong danh sách loại trừ
+        $filtered = [];
+        foreach ($results as $product) {
+            if (!in_array($product['ID_sp'], $excludedIds)) {
+                $filtered[] = $product;
+                if (count($filtered) >= $limit) break;
+            }
+        }
+        
+        return $filtered;
     }
     
     /**
@@ -995,12 +1018,14 @@ class Product extends Model {
     
     /**
      * Lấy danh sách các lô hàng còn tồn của sản phẩm (FEFO)
+     * FIX: Loại trừ lô đã có trong phiếu hủy CHỜ DUYỆT (chỉ được hủy 1 lần)
      * 
      * @param int $productId
      * @return array
      */
     public function getBatches($productId) {
         // Updated to use display code from phieu_nhap_kho table
+        // FIX: Thêm subquery loại trừ lô đã có trong phiếu hủy chờ duyệt
         $sql = "SELECT 
                     ct.ID_chi_tiet_nhap,
                     pn.Ma_hien_thi as Ma_phieu_nhap,
@@ -1011,6 +1036,13 @@ class Product extends Model {
                 JOIN phieu_nhap_kho pn ON ct.ID_phieu_nhap = pn.ID_phieu_nhap
                 WHERE ct.ID_sp = ? 
                 AND ct.So_luong_con > 0
+                AND ct.ID_chi_tiet_nhap NOT IN (
+                    SELECT cth.ID_lo_nhap 
+                    FROM chi_tiet_phieu_huy cth 
+                    JOIN phieu_huy ph ON cth.ID_phieu_huy = ph.ID_phieu_huy 
+                    WHERE ph.Trang_thai IN ('cho_duyet', 'da_duyet')
+                    AND cth.ID_lo_nhap IS NOT NULL
+                )
                 ORDER BY 
                     CASE WHEN ct.Ngay_het_han IS NULL THEN 1 ELSE 0 END, 
                     ct.Ngay_het_han ASC, 
@@ -1018,6 +1050,7 @@ class Product extends Model {
         
         return $this->db->query($sql, [$productId])->fetchAll();
     }
+    
     /**
      * ==========================================================================
      * ADMIN CRUD METHODS

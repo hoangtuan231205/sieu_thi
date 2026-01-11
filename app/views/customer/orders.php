@@ -337,7 +337,7 @@ $user = Session::get('user');
 }
 
 .tracking-item.active .tracking-icon {
-    background: #496C2C;
+    background: #7BC043;
     box-shadow: 0 0 0 4px #e8f0e3;
 }
 

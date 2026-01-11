@@ -33,7 +33,7 @@ include __DIR__ . '/../layouts/header.php';
 }
 
 .breadcrumb-section a:hover {
-    color: #496C2C;
+    color: #7BC043;
 }
 
 .breadcrumb-section span {

@@ -74,12 +74,14 @@
                             <h3 class="admin-card-title">Sản phẩm hủy</h3>
                         </div>
                         <div class="admin-card-body">
-                            <!-- Search Box -->
-                            <div class="admin-search-box" style="margin-bottom: 20px; max-width: 100%; border: none; box-shadow: none; background: #f8fafc;">
+                            <!-- Search Box - Fixed Position -->
+                            <div class="admin-search-box" style="margin-bottom: 20px; max-width: 100%; border: none; box-shadow: none; background: #f8fafc; position: relative;">
                                 <i class="fas fa-search"></i>
-                                <input type="text" id="productSearch" placeholder="Tìm sản phẩm theo tên hoặc mã..." style="background: transparent; border: none;">
-                                <div id="productSuggestions" style="position: absolute; width: 100%; z-index: 100; background: white; border-radius: 10px; margin-top: 4px; max-height: 300px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.15);"></div>
+                                <input type="text" id="productSearch" placeholder="Tìm sản phẩm theo tên hoặc mã..." style="background: transparent; border: none;" autocomplete="off">
+                                <div id="productSuggestions" style="position: absolute; width: 100%; z-index: 9999; background: white; border-radius: 10px; margin-top: 4px; max-height: 300px; overflow-y: auto; display: none; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border: 2px solid red; left: 0;"></div>
                             </div>
+                            <!-- DEBUG LOG AREA -->
+                            <div id="debugLog" style="padding: 10px; background: #fff3cd; color: #856404; font-size: 12px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ffeeba; display: none;"></div>
                             
                             <!-- Items Table -->
                             <table class="admin-table" id="itemsTable">
@@ -163,20 +165,43 @@
 </div>
 
 <script>
+const baseUrl = '<?= BASE_URL ?>';
 let itemIndex = 0;
 const searchInput = document.getElementById('productSearch');
 const suggestions = document.getElementById('productSuggestions');
 let searchTimeout;
 
+const debugLog = document.getElementById('debugLog');
+function log(msg) {
+    debugLog.style.display = 'block';
+    debugLog.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + msg + '</div>';
+}
+
 searchInput.addEventListener('input', function() {
     clearTimeout(searchTimeout);
     const q = this.value.trim();
+    log('Input: ' + q);
+    
     if (q.length < 2) { suggestions.style.display = 'none'; return; }
     
     searchTimeout = setTimeout(() => {
-        fetch(baseUrl + '/admin/search-product-for-disposal?q=' + encodeURIComponent(q))
-        .then(r => r.json())
+        const url = baseUrl + '/admin/search-product-for-disposal?q=' + encodeURIComponent(q);
+        log('Fetching: ' + url);
+        
+        fetch(url)
+        .then(r => {
+            if (!r.ok) throw new Error('Network response was not ok');
+            return r.text().then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    // console.error('Invalid JSON:', text);
+                    throw new Error('Invalid JSON response');
+                }
+            });
+        })
         .then(data => {
+            log('Result: ' + data.length + ' products');
             if (data.length === 0) {
                 suggestions.innerHTML = '<div style="padding: 16px; color: var(--admin-text-muted); text-align: center;">Không tìm thấy sản phẩm</div>';
             } else {
@@ -193,6 +218,12 @@ searchInput.addEventListener('input', function() {
                     </div>
                 `).join('');
             }
+            suggestions.style.display = 'block';
+        })
+        .catch(error => {
+            console.error('Error fetching products:', error);
+            log('ERROR: ' + error.message);
+            suggestions.innerHTML = '<div style="padding: 16px; color: var(--admin-danger); text-align: center;">Lỗi tìm kiếm: ' + error.message + '</div>';
             suggestions.style.display = 'block';
         });
     }, 300);

@@ -161,7 +161,7 @@ class Cart extends Model {
      * @return int
      */
     public function getCartCount($userId) {
-        $sql = "SELECT COALESCE(SUM(gh.So_luong), 0) as total 
+        $sql = "SELECT COUNT(*) as total 
                 FROM {$this->table} gh
                 JOIN san_pham sp ON gh.ID_sp = sp.ID_sp
                 WHERE gh.ID_tk = ? AND sp.Trang_thai = 'active'";

@@ -1829,3 +1829,23 @@ html {
         justify-content: center;
     }
 }
+
+/* ===== FIX: Search Input Icon Overlap =====
+ * Fix cho vấn đề icon tìm kiếm bị đè lên placeholder
+ * trong các trang admin (suppliers, categories, orders)
+ */
+.admin-card .form-control[style*="padding-left"],
+.admin-filter-bar input[type="text"],
+.admin-modern input.form-control {
+    padding-left: 40px !important;
+    box-sizing: border-box;
+}
+
+/* Đảm bảo icon search căn đúng vị trí */
+.admin-card .form-group i.fa-search,
+.admin-filter-bar .form-group i.fa-search {
+    left: 14px !important;
+    font-size: 14px;
+    color: var(--text-muted);
+    z-index: 2;
+}

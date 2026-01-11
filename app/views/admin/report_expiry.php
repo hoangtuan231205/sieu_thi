@@ -27,7 +27,7 @@
             </div>
             <?php if (!empty($expiring_batches)): ?>
             <div class="admin-header-actions">
-                <a href="<?= BASE_URL ?>/admin/disposal-add" class="btn-admin-primary" style="background: var(--admin-danger);">
+                <a href="<?= BASE_URL ?>/admin/disposal-add" class="btn-admin-primary" style="background-color: #ef4444 !important; color: #ffffff !important; border: none;">
                     <i class="fas fa-trash-alt"></i>
                     <span>Tạo phiếu hủy</span>
                 </a>
@@ -38,11 +38,11 @@
         <!-- Stat Cards -->
         <div class="stat-cards-row">
             <!-- Đã hết hạn -->
-            <div class="stat-card" style="border-left: 4px solid var(--admin-danger);">
+            <div class="stat-card" style="border-left: 4px solid var(--danger);">
                 <div class="stat-card-header">
                     <div class="stat-card-info">
                         <h4>Đã hết hạn</h4>
-                        <p class="stat-card-value" style="color: var(--admin-danger);"><?= $stats['expired'] ?? 0 ?></p>
+                        <p class="stat-card-value" style="color: var(--danger);"><?= $stats['expired'] ?? 0 ?></p>
                     </div>
                     <div class="stat-card-icon danger">
                         <i class="fas fa-exclamation-circle"></i>
@@ -57,11 +57,11 @@
             </div>
             
             <!-- Trong 7 ngày -->
-            <div class="stat-card" style="border-left: 4px solid var(--admin-warning);">
+            <div class="stat-card" style="border-left: 4px solid var(--warning);">
                 <div class="stat-card-header">
                     <div class="stat-card-info">
                         <h4>Trong 7 ngày</h4>
-                        <p class="stat-card-value" style="color: var(--admin-warning);"><?= $stats['in_7_days'] ?? 0 ?></p>
+                        <p class="stat-card-value" style="color: var(--warning);"><?= $stats['in_7_days'] ?? 0 ?></p>
                     </div>
                     <div class="stat-card-icon warning">
                         <i class="fas fa-clock"></i>
@@ -76,18 +76,18 @@
             </div>
             
             <!-- Trong 30 ngày -->
-            <div class="stat-card" style="border-left: 4px solid var(--admin-info);">
+            <div class="stat-card" style="border-left: 4px solid var(--info);">
                 <div class="stat-card-header">
                     <div class="stat-card-info">
                         <h4>Trong 30 ngày</h4>
-                        <p class="stat-card-value" style="color: var(--admin-info);"><?= $stats['in_30_days'] ?? 0 ?></p>
+                        <p class="stat-card-value" style="color: var(--info);"><?= $stats['in_30_days'] ?? 0 ?></p>
                     </div>
                     <div class="stat-card-icon info">
                         <i class="fas fa-calendar-alt"></i>
                     </div>
                 </div>
                 <div class="stat-card-footer">
-                    <span style="font-size: 13px; color: var(--admin-text-muted);">Cần theo dõi</span>
+                    <span style="font-size: 13px; color: var(--text-muted);">Cần theo dõi</span>
                 </div>
             </div>
             
@@ -103,7 +103,7 @@
                     </div>
                 </div>
                 <div class="stat-card-footer">
-                    <span style="font-size: 13px; color: var(--admin-text-muted);">Hàng sắp hết hạn</span>
+                    <span style="font-size: 13px; color: var(--text-muted);">Hàng sắp hết hạn</span>
                 </div>
             </div>
         </div>
@@ -139,149 +139,149 @@
                     </button>
                 </form>
                 
-                <!-- Batches Table -->
-                <div class="admin-card">
-                    <div class="admin-card-header">
-                        <h3 class="admin-card-title">Danh sách lô hàng</h3>
-                        <span style="font-size: 13px; color: var(--admin-text-muted);">
-                            <?= count($expiring_batches ?? []) ?> lô
-                        </span>
-                    </div>
-                    <div class="admin-card-body no-padding">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Sản phẩm</th>
-                                    <th>Lô nhập</th>
-                                    <th style="text-align: center;">Còn lại</th>
-                                    <th style="text-align: right;">Giá trị</th>
-                                    <th style="text-align: center;">HSD</th>
-                                    <th style="text-align: center;">Mức</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($expiring_batches)): ?>
-                                    <?php foreach ($expiring_batches as $batch): ?>
-                                        <?php
-                                        $level = $batch['Muc_canh_bao'] ?? 'BINH_THUONG';
-                                        $levelClass = ['DA_HET_HAN' => 'danger', 'TRONG_7_NGAY' => 'warning', 'TRONG_30_NGAY' => 'processing'][$level] ?? '';
-                                        $levelText = ['DA_HET_HAN' => 'Hết hạn', 'TRONG_7_NGAY' => '7 ngày', 'TRONG_30_NGAY' => '30 ngày'][$level] ?? '';
-                                        ?>
-                                        <tr>
-                                            <td>
-                                                <div style="display: flex; align-items: center; gap: 12px;">
-                                                    <img src="<?= asset('img/products/' . ($batch['Hinh_anh'] ?: 'placeholder.png')) ?>" 
-                                                         onerror="this.src='<?= asset('img/placeholder-product.png') ?>'" 
-                                                         style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #f8fafc;">
-                                                    <div>
-                                                        <div style="font-weight: 500;"><?= htmlspecialchars($batch['Ten_SP']) ?></div>
-                                                        <div style="font-size: 12px; color: var(--admin-text-muted);"><?= htmlspecialchars($batch['Ma_SP']) ?></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="type-badge huy"><?= htmlspecialchars($batch['Ma_phieu_nhap']) ?></span>
-                                                <div style="font-size: 12px; color: var(--admin-text-muted); margin-top: 4px;">
-                                                    <?= date('d/m/Y', strtotime($batch['Ngay_nhap'])) ?>
-                                                </div>
-                                            </td>
-                                            <td style="text-align: center; font-weight: 600;"><?= number_format($batch['So_luong_con']) ?></td>
-                                            <td style="text-align: right; font-weight: 600;"><?= number_format($batch['Gia_tri_ton'], 0, ',', '.') ?>đ</td>
-                                            <td style="text-align: center; <?= $level == 'DA_HET_HAN' ? 'color: var(--admin-danger); font-weight: 600;' : '' ?>">
-                                                <?= date('d/m/Y', strtotime($batch['Ngay_het_han'])) ?>
-                                            </td>
-                                            <td style="text-align: center;">
-                                                <span class="status-badge <?= $levelClass ?>">
-                                                    <span class="dot"></span>
-                                                    <?= $levelText ?>
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="6" style="text-align: center; padding: 60px 20px;">
-                                            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-                                                <i class="fas fa-check-circle" style="font-size: 36px; color: var(--admin-success);"></i>
-                                            </div>
-                                            <h4 style="font-size: 18px; font-weight: 600; margin: 0 0 8px 0;">Tuyệt vời!</h4>
-                                            <p style="color: var(--admin-text-muted); margin: 0;">Không có lô hàng nào sắp hết hạn</p>
-                                        </td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <!-- Batches Table -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Danh sách lô hàng</h3>
+                <span style="font-size: 13px; color: var(--text-muted);">
+                    <?= count($expiring_batches ?? []) ?> lô
+                </span>
             </div>
-            
-            <!-- Sidebar Alerts -->
-            <div class="col-lg-4">
-                <div class="admin-card">
-                    <div class="admin-card-header">
-                        <h3 class="admin-card-title">Cảnh báo tồn kho</h3>
-                        <?php $urgentCount = ($stats['expired'] ?? 0) + ($stats['in_7_days'] ?? 0); ?>
-                        <?php if ($urgentCount > 0): ?>
-                        <span style="padding: 4px 10px; background: rgba(239, 68, 68, 0.1); color: var(--admin-danger); font-size: 12px; font-weight: 600; border-radius: 20px;">
-                            <?= $urgentCount ?> Khẩn cấp
-                        </span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="admin-card-body" style="max-height: 500px; overflow-y: auto;">
+            <div class="admin-card-body no-padding">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Lô nhập</th>
+                            <th style="text-align: center;">Còn lại</th>
+                            <th style="text-align: right;">Giá trị</th>
+                            <th style="text-align: center;">HSD</th>
+                            <th style="text-align: center;">Mức</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         <?php if (!empty($expiring_batches)): ?>
-                            <?php 
-                            $shown = 0;
-                            foreach ($expiring_batches as $batch): 
-                                if ($shown >= 10) break;
+                            <?php foreach ($expiring_batches as $batch): ?>
+                                <?php
                                 $level = $batch['Muc_canh_bao'] ?? 'BINH_THUONG';
-                                $alertClass = $level == 'DA_HET_HAN' ? 'critical' : ($level == 'TRONG_7_NGAY' ? 'warning' : 'normal');
-                                $shown++;
-                            ?>
-                            <div class="alert-card <?= $alertClass ?>">
-                                <img src="<?= asset('img/products/' . ($batch['Hinh_anh'] ?: 'placeholder.png')) ?>" 
-                                     onerror="this.src='<?= asset('img/placeholder-product.png') ?>'" 
-                                     class="alert-card-img">
-                                <div class="alert-card-info">
-                                    <h5><?= htmlspecialchars($batch['Ten_SP']) ?></h5>
-                                    <?php if ($level == 'DA_HET_HAN'): ?>
-                                        <p class="critical">Đã hết hạn!</p>
-                                    <?php elseif ($level == 'TRONG_7_NGAY'): ?>
-                                        <p class="warning">Còn <?= $batch['So_ngay_con'] ?> ngày</p>
-                                    <?php else: ?>
-                                        <p class="muted">Còn <?= $batch['So_ngay_con'] ?> ngày</p>
-                                    <?php endif; ?>
-                                </div>
-                                <?php if ($level == 'DA_HET_HAN'): ?>
-                                    <?php 
-                                    $price = ($batch['So_luong_con'] > 0) ? round($batch['Gia_tri_ton'] / $batch['So_luong_con']) : 0;
-                                    $params = http_build_query([
-                                        'product_id' => $batch['ID_sp'],
-                                        'batch_id' => $batch['ID_lo_hang'] ?? '',
-                                        'batch_code' => $batch['Ma_phieu_nhap'] ?? '',
-                                        'quantity' => $batch['So_luong_con'],
-                                        'price' => $price,
-                                        'reason' => 'Sản phẩm đã hết hạn sử dụng'
-                                    ]);
-                                    ?>
-                                    <a href="<?= BASE_URL ?>/admin/disposal-add?<?= $params ?>" class="alert-card-btn">
-                                        Hủy
-                                    </a>
-                                <?php elseif ($level == 'TRONG_7_NGAY'): ?>
-                                    <a href="javascript:void(0)" onclick="fetchAndEditProduct(<?= $batch['ID_sp'] ?>)" class="alert-card-btn warning">
-                                        Giảm giá
-                                    </a>
-                                <?php endif; ?>
-                            </div>
+                                $levelClass = ['DA_HET_HAN' => 'danger', 'TRONG_7_NGAY' => 'warning', 'TRONG_30_NGAY' => 'processing'][$level] ?? '';
+                                $levelText = ['DA_HET_HAN' => 'Hết hạn', 'TRONG_7_NGAY' => '7 ngày', 'TRONG_30_NGAY' => '30 ngày'][$level] ?? '';
+                                ?>
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <img src="<?= asset('img/products/' . ($batch['Hinh_anh'] ?: 'placeholder.png')) ?>" 
+                                                 onerror="this.src='<?= asset('img/placeholder-product.png') ?>'" 
+                                                 style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #f8fafc;">
+                                            <div>
+                                                <div style="font-weight: 500;"><?= htmlspecialchars($batch['Ten_SP']) ?></div>
+                                                <div style="font-size: 12px; color: var(--text-muted);"><?= htmlspecialchars($batch['Ma_SP']) ?></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="type-badge huy"><?= htmlspecialchars($batch['Ma_phieu_nhap']) ?></span>
+                                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                            <?= date('d/m/Y', strtotime($batch['Ngay_nhap'])) ?>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 600;"><?= number_format($batch['So_luong_con']) ?></td>
+                                    <td style="text-align: right; font-weight: 600;"><?= number_format($batch['Gia_tri_ton'], 0, ',', '.') ?>đ</td>
+                                    <td style="text-align: center; <?= $level == 'DA_HET_HAN' ? 'color: var(--danger); font-weight: 600;' : '' ?>">
+                                        <?= date('d/m/Y', strtotime($batch['Ngay_het_han'])) ?>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span class="status-badge <?= $levelClass ?>">
+                                            <span class="dot"></span>
+                                            <?= $levelText ?>
+                                        </span>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <div style="text-align: center; padding: 40px 20px;">
-                                <i class="fas fa-box-open" style="font-size: 48px; color: var(--admin-text-light); display: block; margin-bottom: 16px;"></i>
-                                <p style="color: var(--admin-text-muted);">Không có cảnh báo</p>
-                            </div>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 60px 20px;">
+                                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                                        <i class="fas fa-check-circle" style="font-size: 36px; color: var(--success);"></i>
+                                    </div>
+                                    <h4 style="font-size: 18px; font-weight: 600; margin: 0 0 8px 0;">Tuyệt vời!</h4>
+                                    <p style="color: var(--text-muted); margin: 0;">Không có lô hàng nào sắp hết hạn</p>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar Alerts -->
+    <div class="col-lg-4">
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Cảnh báo tồn kho</h3>
+                <?php $urgentCount = ($stats['expired'] ?? 0) + ($stats['in_7_days'] ?? 0); ?>
+                <?php if ($urgentCount > 0): ?>
+                <span style="padding: 4px 10px; background: rgba(239, 68, 68, 0.1); color: var(--danger); font-size: 12px; font-weight: 600; border-radius: 20px;">
+                    <?= $urgentCount ?> Khẩn cấp
+                </span>
+                <?php endif; ?>
+            </div>
+            <div class="admin-card-body" style="max-height: 500px; overflow-y: auto;">
+                <?php if (!empty($expiring_batches)): ?>
+                    <?php 
+                    $shown = 0;
+                    foreach ($expiring_batches as $batch): 
+                        if ($shown >= 10) break;
+                        $level = $batch['Muc_canh_bao'] ?? 'BINH_THUONG';
+                        $alertClass = $level == 'DA_HET_HAN' ? 'critical' : ($level == 'TRONG_7_NGAY' ? 'warning' : 'normal');
+                        $shown++;
+                    ?>
+                    <div class="alert-card <?= $alertClass ?>">
+                        <img src="<?= asset('img/products/' . ($batch['Hinh_anh'] ?: 'placeholder.png')) ?>" 
+                             onerror="this.src='<?= asset('img/placeholder-product.png') ?>'" 
+                             class="alert-card-img">
+                        <div class="alert-card-info">
+                            <h5><?= htmlspecialchars($batch['Ten_SP']) ?></h5>
+                            <?php if ($level == 'DA_HET_HAN'): ?>
+                                <p class="critical">Đã hết hạn!</p>
+                            <?php elseif ($level == 'TRONG_7_NGAY'): ?>
+                                <p class="warning">Còn <?= $batch['So_ngay_con'] ?> ngày</p>
+                            <?php else: ?>
+                                <p class="muted">Còn <?= $batch['So_ngay_con'] ?> ngày</p>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($level == 'DA_HET_HAN'): ?>
+                            <?php 
+                            $price = ($batch['So_luong_con'] > 0) ? round($batch['Gia_tri_ton'] / $batch['So_luong_con']) : 0;
+                            $params = http_build_query([
+                                'product_id' => $batch['ID_sp'],
+                                'batch_id' => $batch['ID_lo_hang'] ?? '',
+                                'batch_code' => $batch['Ma_phieu_nhap'] ?? '',
+                                'quantity' => $batch['So_luong_con'],
+                                'price' => $price,
+                                'reason' => 'Sản phẩm đã hết hạn sử dụng'
+                            ]);
+                            ?>
+                            <a href="<?= BASE_URL ?>/admin/disposal-add?<?= $params ?>" class="alert-card-btn">
+                                Hủy
+                            </a>
+                        <?php elseif ($level == 'TRONG_7_NGAY'): ?>
+                            <a href="javascript:void(0)" onclick="fetchAndEditProduct(<?= $batch['ID_sp'] ?>)" class="alert-card-btn warning">
+                                Giảm giá
+                            </a>
                         <?php endif; ?>
                     </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <i class="fas fa-box-open" style="font-size: 48px; color: var(--text-light); display: block; margin-bottom: 16px;"></i>
+                        <p style="color: var(--text-muted);">Không có cảnh báo</p>
+                    </div>
+                <?php endif; ?>
             </div>
+        </div>
+    </div>
         </div>
     </div>
 </div>

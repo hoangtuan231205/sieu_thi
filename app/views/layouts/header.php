@@ -151,11 +151,9 @@
                     <?php
                     // Đảm bảo số lượng luôn chính xác "mọi lúc mọi nơi"
                     if (Session::isLoggedIn()) {
-                        $currentCount = Session::getCartCount();
-                        // Nếu session = 0, thử đồng bộ lại 1 lần từ DB để chắc chắn
-                        if ($currentCount <= 0) {
-                            $currentCount = Session::syncCartCount();
-                        }
+                        // FIX: Luôn đồng bộ lại từ database để đảm bảo chính xác số loại sản phẩm
+                        // Thay vì tin tưởng session cũ có thể bị sai lệch
+                        $currentCount = Session::syncCartCount();
                     } else {
                         $currentCount = 0;
                     }
