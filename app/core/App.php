@@ -1,25 +1,5 @@
 <?php
-/**
- * =============================================================================
- * APP CLASS - ROUTER (XỬ LÝ URL VÀ GỌI CONTROLLER)
- * =============================================================================
- * 
- * Class này xử lý:
- * - Phân tích URL thành Controller, Method, Parameters
- * - Gọi Controller và Method tương ứng
- * - Xử lý 404 Not Found
- * 
- * URL PATTERN:
- * http://localhost/sieu_thi/public/controller/method/param1/param2
- * 
- * VÍ DỤ:
- * /                          → HomeController->index()
- * /products                  → ProductController->index()
- * /products/detail/5         → ProductController->detail(5)
- * /cart/add                  → CartController->add()
- * /admin/products            → AdminController->products()
- * /admin/orders              → AdminController->orders()
- */
+
 
 class App {
     

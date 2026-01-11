@@ -1,2 +1,3 @@
 [2026-01-11 07:16:51] [INFO] [cart] Removed cart item 49 for user 1 
 [2026-01-11 07:17:00] [INFO] [cart] Removed cart item 52 for user 1 
+[2026-01-11 16:01:30] [INFO] [cart] User initiated buy now for product 74 (qty=1) {"user_id":1,"product_id":74}

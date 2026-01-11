@@ -143,26 +143,35 @@ function getStatusLabel($status) {
 
         <!-- Main Content -->
         <div class="admin-card">
-            <div class="admin-card-header">
+            <div class="admin-card-header" style="flex-wrap: wrap; gap: 12px;">
                 <h3 class="admin-card-title">Danh sách đơn hàng</h3>
                 
-                <!-- Filter Form embedded in header for compactness -->
-                <form action="" method="GET" style="display: flex; gap: 12px; align-items: center;">
-                    <div style="position: relative;">
-                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-light);"></i>
-                        <input type="text" name="search" class="form-control" placeholder="Tìm đơn hàng..." 
-                               value="<?= htmlspecialchars($filters['keyword']) ?>"
-                               style="padding-left: 42px; padding-right: 12px; height: 36px; width: 250px;">
-                    </div>
+                <!-- Filter + Bulk Actions Container -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <!-- Filter Form -->
+                    <form action="" method="GET" style="display: flex; gap: 12px; align-items: center;">
+                        <div style="position: relative;">
+                            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-light);"></i>
+                            <input type="text" name="search" class="form-control" placeholder="Tìm đơn hàng..." 
+                                   value="<?= htmlspecialchars($filters['keyword']) ?>"
+                                   style="padding-left: 42px; padding-right: 12px; height: 36px; width: 200px;">
+                        </div>
+                        
+                        <select name="status" class="form-select" onchange="this.form.submit()" style="height: 36px; min-width: 180px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="dang_xu_ly" <?= $filters['status'] == 'dang_xu_ly' ? 'selected' : '' ?>>Đang xử lý</option>
+                            <option value="dang_giao" <?= $filters['status'] == 'dang_giao' ? 'selected' : '' ?>>Đang giao</option>
+                            <option value="da_giao" <?= $filters['status'] == 'da_giao' ? 'selected' : '' ?>>Đã giao</option>
+                            <option value="huy" <?= $filters['status'] == 'huy' ? 'selected' : '' ?>>Trả hàng / Hủy</option>
+                        </select>
+                    </form>
                     
-                    <select name="status" class="form-select" onchange="this.form.submit()" style="height: 36px; min-width: 160px;">
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="dang_xu_ly" <?= $filters['status'] == 'dang_xu_ly' ? 'selected' : '' ?>>Đang xử lý</option>
-                        <option value="dang_giao" <?= $filters['status'] == 'dang_giao' ? 'selected' : '' ?>>Đang giao</option>
-                        <option value="da_giao" <?= $filters['status'] == 'da_giao' ? 'selected' : '' ?>>Đã giao</option>
-                        <option value="huy" <?= $filters['status'] == 'huy' ? 'selected' : '' ?>>Trả hàng / Hủy</option>
-                    </select>
-                </form>
+                    <!-- Bulk Update Button -->
+                    <button id="bulkUpdateBtn" class="btn-admin-primary" style="display: none; padding: 8px 16px; font-size: 13px; white-space: nowrap;" onclick="bulkUpdateStatus()">
+                        <i class="fas fa-arrow-right"></i>
+                        <span>Chuyển trạng thái (<span id="selectedCount">0</span>)</span>
+                    </button>
+                </div>
             </div>
             
             <div class="admin-card-body no-padding">
@@ -175,14 +184,13 @@ function getStatusLabel($status) {
                             <th>Chi tiết SP</th>
                             <th style="text-align: right;">Tổng tiền</th>
                             <th style="text-align: center;">Trạng thái</th>
-                            <th style="text-align: center;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (!empty($orders)): ?>
                             <?php foreach ($orders as $order): ?>
                             <tr>
-                                <td><input type="checkbox"></td>
+                                <td><input type="checkbox" class="order-checkbox" data-id="<?= $order['ID_dh'] ?>" data-status="<?= $order['Trang_thai'] ?>"></td>
                                 <td>
                                     <a href="<?= BASE_URL ?>/admin/orderDetail/<?= $order['ID_dh'] ?>" style="font-weight: 600; color: var(--primary);">
                                         DH<?= date('Ymd', strtotime($order['Ngay_dat'])) ?><?= str_pad($order['ID_dh'], 2, '0', STR_PAD_LEFT) ?>
@@ -227,21 +235,11 @@ function getStatusLabel($status) {
                                         <?= getStatusLabel($order['Trang_thai']) ?>
                                     </span>
                                 </td>
-                                <td style="text-align: center;">
-                                    <div style="display: flex; justify-content: center; gap: 8px;">
-                                        <a href="<?= BASE_URL ?>/admin/orderDetail/<?= $order['ID_dh'] ?>" class="btn-icon" title="Xem chi tiết">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="btn-icon" title="In hóa đơn">
-                                            <i class="fas fa-print"></i>
-                                        </a>
-                                    </div>
-                                </td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" style="text-align: center; padding: 60px 20px;">
+                                <td colspan="6" style="text-align: center; padding: 60px 20px;">
                                     <i class="fas fa-box-open" style="font-size: 48px; color: var(--admin-text-light); margin-bottom: 16px; display: block;"></i>
                                     <p style="color: var(--admin-text-muted);">Không tìm thấy đơn hàng nào</p>
                                 </td>
@@ -308,3 +306,129 @@ function getStatusLabel($status) {
 </div>
 
 <?php include __DIR__ . '/../layouts/footer.php'; ?>
+
+<script>
+// Bulk Order Status Update Logic
+const STATUS_FLOW = {
+    'dang_xu_ly': 'dang_giao',
+    'dang_giao': 'da_giao',
+    'da_giao': null // Đã ở bước cuối
+};
+
+const STATUS_LABELS = {
+    'dang_xu_ly': 'Đang xử lý',
+    'dang_giao': 'Đang giao',
+    'da_giao': 'Đã giao',
+    'huy': 'Trả hàng / Hủy'
+};
+
+// Select All checkbox
+document.getElementById('selectAll')?.addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.order-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    updateBulkButton();
+});
+
+// Individual checkboxes
+document.querySelectorAll('.order-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateBulkButton);
+});
+
+function updateBulkButton() {
+    const checked = document.querySelectorAll('.order-checkbox:checked');
+    const btn = document.getElementById('bulkUpdateBtn');
+    const countSpan = document.getElementById('selectedCount');
+    
+    if (checked.length > 0) {
+        btn.style.display = 'inline-flex';
+        countSpan.textContent = checked.length;
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
+function bulkUpdateStatus() {
+    const checked = document.querySelectorAll('.order-checkbox:checked');
+    if (checked.length === 0) {
+        alert('Vui lòng chọn ít nhất 1 đơn hàng!');
+        return;
+    }
+    
+    // Collect order IDs and statuses
+    const orders = [];
+    let firstStatus = null;
+    let hasError = false;
+    let errorMessage = '';
+    
+    checked.forEach(cb => {
+        const id = cb.dataset.id;
+        const status = cb.dataset.status;
+        
+        // Check for cancelled orders
+        if (status === 'huy') {
+            hasError = true;
+            errorMessage = 'Đơn hàng đã hủy không thể cập nhật trạng thái!';
+            return;
+        }
+        
+        // Check for final status
+        if (status === 'da_giao') {
+            hasError = true;
+            errorMessage = 'Đơn hàng đã giao không thể chuyển tiếp!';
+            return;
+        }
+        
+        // Check same status
+        if (firstStatus === null) {
+            firstStatus = status;
+        } else if (firstStatus !== status) {
+            hasError = true;
+            errorMessage = 'Vui lòng chọn các đơn hàng có CÙNG TRẠNG THÁI để cập nhật!';
+            return;
+        }
+        
+        orders.push(id);
+    });
+    
+    if (hasError) {
+        alert(errorMessage);
+        return;
+    }
+    
+    const nextStatus = STATUS_FLOW[firstStatus];
+    const currentLabel = STATUS_LABELS[firstStatus];
+    const nextLabel = STATUS_LABELS[nextStatus];
+    
+    // Confirmation
+    if (!confirm(`Bạn có chắc chắn muốn chuyển ${orders.length} đơn hàng từ "${currentLabel}" sang "${nextLabel}"?`)) {
+        return;
+    }
+    
+    // Send AJAX request
+    fetch('<?= BASE_URL ?>/admin/bulk-update-order-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            order_ids: orders,
+            new_status: nextStatus,
+            csrf_token: '<?= Session::getCsrfToken() ?>'
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || 'Cập nhật thành công!');
+            location.reload();
+        } else {
+            alert(data.message || 'Có lỗi xảy ra!');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Lỗi kết nối server!');
+    });
+}
+</script>

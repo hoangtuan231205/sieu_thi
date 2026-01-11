@@ -202,7 +202,7 @@ $today = date('d/m/Y');
             <div class="admin-card">
                 <div class="admin-card-header" style="justify-content: space-between;">
                     <h3 class="admin-card-title">Xu hướng doanh thu</h3>
-                    <a href="<?= BASE_URL ?>/public/admin/report-profit" style="font-size: 13px; color: var(--admin-primary); text-decoration: none; font-weight: 600;">Xem chi tiết</a>
+                    <a href="<?= BASE_URL ?>/admin/report-profit" style="font-size: 13px; color: var(--admin-primary); text-decoration: none; font-weight: 600;">Xem chi tiết</a>
                 </div>
                 <div class="admin-card-body">
                     <div style="height: 300px;">

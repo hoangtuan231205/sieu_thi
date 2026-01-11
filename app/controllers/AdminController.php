@@ -1069,6 +1069,116 @@ class AdminController extends Controller {
         }
     }
     
+    /**
+     * ==========================================================================
+     * METHOD: bulkUpdateOrderStatus() - CẬP NHẬT TRẠNG THÁI HÀNG LOẠT (AJAX)
+     * ==========================================================================
+     * 
+     * URL: /admin/bulk-update-order-status (POST AJAX)
+     * 
+     * Luồng trạng thái 1 chiều: dang_xu_ly -> dang_giao -> da_giao
+     * Đơn hàng đã hủy hoặc đã giao không được phép cập nhật.
+     */
+    public function bulkUpdateOrderStatus() {
+        if (!$this->isAjax() || !$this->isMethod('POST')) {
+            $this->json(['error' => 'Invalid request'], 400);
+            return;
+        }
+        
+        // Đọc JSON body
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        // CSRF Check
+        if (!Middleware::verifyCsrf($input['csrf_token'] ?? '')) {
+            $this->json(['success' => false, 'message' => 'Phiên làm việc hết hạn, vui lòng tải lại trang']);
+            return;
+        }
+        
+        $orderIds = $input['order_ids'] ?? [];
+        $newStatus = $input['new_status'] ?? '';
+        
+        // Validate input
+        if (empty($orderIds) || !is_array($orderIds)) {
+            $this->json(['success' => false, 'message' => 'Không có đơn hàng nào được chọn']);
+            return;
+        }
+        
+        // Validate new status (chỉ cho phép 2 trạng thái tiến tới)
+        $allowedNextStatuses = ['dang_giao', 'da_giao'];
+        if (!in_array($newStatus, $allowedNextStatuses)) {
+            $this->json(['success' => false, 'message' => 'Trạng thái mới không hợp lệ']);
+            return;
+        }
+        
+        // Xác định trạng thái hiện tại hợp lệ dựa trên trạng thái mới
+        $validCurrentStatus = ($newStatus === 'dang_giao') ? 'dang_xu_ly' : 'dang_giao';
+        
+        $successCount = 0;
+        $failCount = 0;
+        $errors = [];
+        
+        foreach ($orderIds as $orderId) {
+            $orderId = (int)$orderId;
+            if ($orderId <= 0) continue;
+            
+            // Kiểm tra đơn hàng
+            $order = $this->orderModel->findById($orderId);
+            if (!$order) {
+                $failCount++;
+                $errors[] = "Đơn #{$orderId} không tồn tại";
+                continue;
+            }
+            
+            // Kiểm tra trạng thái hiện tại
+            if ($order['Trang_thai'] === 'huy') {
+                $failCount++;
+                $errors[] = "Đơn #{$orderId} đã hủy, không thể cập nhật";
+                continue;
+            }
+            
+            if ($order['Trang_thai'] !== $validCurrentStatus) {
+                $failCount++;
+                $errors[] = "Đơn #{$orderId} không ở trạng thái phù hợp để chuyển";
+                continue;
+            }
+            
+            // Cập nhật
+            $result = $this->orderModel->updateStatus($orderId, $newStatus);
+            if ($result) {
+                $successCount++;
+                
+                // Log activity
+                Middleware::logActivity('bulk_update_order_status', [
+                    'admin_id' => Session::getUserId(),
+                    'order_id' => $orderId,
+                    'new_status' => $newStatus
+                ]);
+            } else {
+                $failCount++;
+                $errors[] = "Đơn #{$orderId} cập nhật thất bại";
+            }
+        }
+        
+        // Trả kết quả
+        if ($successCount > 0 && $failCount === 0) {
+            $this->json([
+                'success' => true,
+                'message' => "Đã cập nhật thành công {$successCount} đơn hàng"
+            ]);
+        } elseif ($successCount > 0 && $failCount > 0) {
+            $total = $successCount + $failCount;
+            $this->json([
+                'success' => true,
+                'message' => "Cập nhật {$successCount}/{$total} đơn. Lỗi: " . implode(', ', $errors)
+            ]);
+        } else {
+            $this->json([
+                'success' => false,
+                'message' => 'Không có đơn hàng nào được cập nhật. ' . implode(', ', $errors)
+            ]);
+        }
+    }
+    
     // =========================================================================
     // USER METHODS → AdminUserTrait
     // Method users() is implemented in AdminUserTrait
