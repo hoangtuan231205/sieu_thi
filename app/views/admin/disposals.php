@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * ADMIN - QUẢN LÝ PHIẾU HỦY
  * Standardized UI - Theme Woodland
@@ -16,9 +16,9 @@
             <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
             <span class="current">Quản lý phiếu hủy</span>
         </div>
-        
+
         <?php include __DIR__ . '/components/warehouse_tabs.php'; ?>
-        
+
         <!-- Page Header -->
         <div class="admin-page-header">
             <div>
@@ -26,17 +26,13 @@
                 <p class="admin-page-subtitle">Theo dõi và kiểm soát thất thoát hàng hóa</p>
             </div>
             <div class="admin-header-actions">
-                <a href="<?= BASE_URL ?>/admin/export-disposal-excel?status=<?= $filters['trang_thai'] ?? '' ?>" class="btn-admin-secondary">
-                    <i class="fas fa-download"></i>
-                    <span>Xuất Excel</span>
-                </a>
                 <a href="<?= BASE_URL ?>/admin/disposal-add" class="btn-admin-primary">
                     <i class="fas fa-plus"></i>
                     <span>Tạo Phiếu Hủy Mới</span>
                 </a>
             </div>
         </div>
-        
+
         <!-- Stats Cards using standard admin-modern style -->
         <div class="stat-cards-row">
             <!-- Card 1: Tổng phiếu -->
@@ -56,13 +52,15 @@
                     </span>
                 </div>
             </div>
-            
+
             <!-- Card 2: Thiệt hại -->
             <div class="stat-card" style="border-left: 4px solid var(--admin-danger);">
                 <div class="stat-card-header">
                     <div class="stat-card-info">
                         <h4>Giá trị thiệt hại</h4>
-                        <p class="stat-card-value" style="color: var(--admin-danger);"><?= number_format($total_value ?? 0, 0, ',', '.') ?>đ</p>
+                        <p class="stat-card-value" style="color: var(--admin-danger);">
+                            <?= number_format($total_value ?? 0, 0, ',', '.') ?>đ
+                        </p>
                     </div>
                     <div class="stat-card-icon danger">
                         <i class="fas fa-dollar-sign"></i>
@@ -74,13 +72,15 @@
                     </span>
                 </div>
             </div>
-            
+
             <!-- Card 3: Chờ duyệt -->
             <div class="stat-card" style="border-left: 4px solid var(--admin-warning);">
                 <div class="stat-card-header">
                     <div class="stat-card-info">
-                        <h4>Hàng hỏng</h4>
-                        <p class="stat-card-value" style="color: var(--admin-warning);"><?= number_format($status_counts['cho_duyet'] ?? 0) ?> phiếu</p>
+                        <h4>Chờ duyệt</h4>
+                        <p class="stat-card-value" style="color: var(--admin-warning);">
+                            <?= number_format($status_counts['cho_duyet'] ?? 0) ?> phiếu
+                        </p>
                     </div>
                     <div class="stat-card-icon warning">
                         <i class="fas fa-box-open"></i>
@@ -88,17 +88,19 @@
                 </div>
                 <div class="stat-card-footer">
                     <span class="stat-badge warning">
-                         Chờ xử lý
+                        Chờ xử lý
                     </span>
                 </div>
             </div>
-            
+
             <!-- Card 4: Đã duyệt -->
             <div class="stat-card" style="border-left: 4px solid var(--admin-info);">
                 <div class="stat-card-header">
                     <div class="stat-card-info">
                         <h4>Đã duyệt</h4>
-                        <p class="stat-card-value" style="color: var(--admin-info);"><?= number_format($status_counts['da_duyet'] ?? 0) ?> phiếu</p>
+                        <p class="stat-card-value" style="color: var(--admin-info);">
+                            <?= number_format($status_counts['da_duyet'] ?? 0) ?> phiếu
+                        </p>
                     </div>
                     <div class="stat-card-icon info">
                         <i class="fas fa-check-circle"></i>
@@ -111,46 +113,52 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Filters Toolbar -->
         <div class="admin-card mb-4" style="margin-bottom: 24px;">
             <div class="admin-card-body">
                 <form method="GET" class="admin-filter-bar" style="flex-wrap: wrap; gap: 16px;">
                     <div class="form-group" style="flex: 1; min-width: 200px;">
                         <div style="position: relative;">
-                            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-light);"></i>
-                            <input type="text" name="keyword" class="form-control" placeholder="Tìm theo mã phiếu, sản phẩm..." 
-                                   value="<?= htmlspecialchars($filters['keyword'] ?? '') ?>"
-                                   style="padding-left: 42px;">
+                            <i class="fas fa-search"
+                                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-light);"></i>
+                            <input type="text" name="keyword" class="form-control"
+                                placeholder="Tìm theo mã phiếu, sản phẩm..."
+                                value="<?= htmlspecialchars($filters['keyword'] ?? '') ?>" style="padding-left: 42px;">
                         </div>
                     </div>
-                    
+
                     <div class="form-group" style="min-width: 150px;">
-                         <select name="type" class="form-select" onchange="this.form.submit()">
+                        <select name="type" class="form-select" onchange="this.form.submit()">
                             <option value="">Lý do: Tất cả</option>
-                            <option value="hong" <?= ($filters['loai_phieu'] ?? '') == 'hong' ? 'selected' : '' ?>>Hàng hỏng</option>
-                            <option value="het_han" <?= ($filters['loai_phieu'] ?? '') == 'het_han' ? 'selected' : '' ?>>Hết hạn</option>
-                            <option value="huy" <?= ($filters['loai_phieu'] ?? '') == 'huy' ? 'selected' : '' ?>>Hủy bỏ</option>
+                            <option value="hong" <?= ($filters['loai_phieu'] ?? '') == 'hong' ? 'selected' : '' ?>>Hàng
+                                hỏng</option>
+                            <option value="het_han" <?= ($filters['loai_phieu'] ?? '') == 'het_han' ? 'selected' : '' ?>>
+                                Hết hạn</option>
+                            <option value="huy" <?= ($filters['loai_phieu'] ?? '') == 'huy' ? 'selected' : '' ?>>Hủy bỏ
+                            </option>
                             <option value="dieu_chinh" <?= ($filters['loai_phieu'] ?? '') == 'dieu_chinh' ? 'selected' : '' ?>>Điều chỉnh</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group" style="min-width: 150px;">
                         <select name="status" class="form-select" onchange="this.form.submit()">
                             <option value="">Trạng thái</option>
                             <option value="cho_duyet" <?= ($filters['trang_thai'] ?? '') == 'cho_duyet' ? 'selected' : '' ?>>Chờ duyệt</option>
-                            <option value="da_duyet" <?= ($filters['trang_thai'] ?? '') == 'da_duyet' ? 'selected' : '' ?>>Đã duyệt</option>
-                            <option value="tu_choi" <?= ($filters['trang_thai'] ?? '') == 'tu_choi' ? 'selected' : '' ?>>Từ chối</option>
+                            <option value="da_duyet" <?= ($filters['trang_thai'] ?? '') == 'da_duyet' ? 'selected' : '' ?>>
+                                Đã duyệt</option>
+                            <option value="tu_choi" <?= ($filters['trang_thai'] ?? '') == 'tu_choi' ? 'selected' : '' ?>>Từ
+                                chối</option>
                         </select>
                     </div>
-                    
+
                     <a href="<?= BASE_URL ?>/admin/disposals" class="btn-admin-secondary" title="Reset">
                         <i class="fas fa-undo"></i>
                     </a>
                 </form>
             </div>
         </div>
-        
+
         <!-- Data Table -->
         <div class="admin-card">
             <div class="admin-card-body no-padding">
@@ -164,6 +172,7 @@
                                 <th>Mã Phiếu</th>
                                 <th>Ngày Tạo</th>
                                 <th>Người Thực Hiện</th>
+                                <th>Sản phẩm</th>
                                 <th>Lý Do</th>
                                 <th style="text-align: right;">Thiệt Hại</th>
                                 <th>Trạng Thái</th>
@@ -172,7 +181,7 @@
                         </thead>
                         <tbody>
                             <?php if (!empty($disposals)): ?>
-                                <?php 
+                                <?php
                                 $loaiLabels = ['huy' => 'Hủy bỏ', 'hong' => 'Hàng hỏng', 'het_han' => 'Hết hạn', 'dieu_chinh' => 'Điều chỉnh'];
                                 $statusLabels = ['cho_duyet' => 'Chờ duyệt', 'da_duyet' => 'Đã duyệt', 'tu_choi' => 'Từ chối'];
                                 // Map status to admin-modern badge classes
@@ -181,16 +190,20 @@
                                 <?php foreach ($disposals as $d): ?>
                                     <tr>
                                         <td>
-                                            <input type="checkbox" name="selected[]" value="<?= $d['ID_phieu_huy'] ?>" style="cursor: pointer;">
+                                            <input type="checkbox" name="selected[]" value="<?= $d['ID_phieu_huy'] ?>"
+                                                style="cursor: pointer;">
                                         </td>
                                         <td>
-                                            <a href="<?= BASE_URL ?>/admin/disposal-detail/<?= $d['ID_phieu_huy'] ?>" style="color: var(--admin-primary); fontWeight: 600;">
+                                            <a href="<?= BASE_URL ?>/admin/disposal-detail/<?= $d['ID_phieu_huy'] ?>"
+                                                style="color: var(--admin-primary); fontWeight: 600;">
                                                 <?= htmlspecialchars($d['Ma_hien_thi']) ?>
                                             </a>
                                         </td>
                                         <td>
                                             <?= date('d/m/Y', strtotime($d['Ngay_tao'])) ?>
-                                            <div style="font-size: 12px; color: var(--admin-text-muted);"><?= date('H:i', strtotime($d['Ngay_tao'])) ?></div>
+                                            <div style="font-size: 12px; color: var(--admin-text-muted);">
+                                                <?= date('H:i', strtotime($d['Ngay_tao'])) ?>
+                                            </div>
                                         </td>
                                         <td>
                                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -199,7 +212,22 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span style="font-size: 13px; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #475569;">
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <i class="fas fa-box"
+                                                    style="color: var(--admin-text-light); font-size: 14px;"></i>
+                                                <span>
+                                                    <?= htmlspecialchars($d['Ten_san_pham'] ?? 'N/A') ?>
+                                                </span>
+                                            </div>
+                                            <?php if (!empty($d['So_luong_huy'])): ?>
+                                                <div style="font-size: 12px; color: var(--admin-text-muted); margin-left: 22px;">SL:
+                                                    <?= number_format($d['So_luong_huy']) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span
+                                                style="font-size: 13px; padding: 2px 8px; border-radius: 12px; background: #f1f5f9; color: #475569;">
                                                 <?= $loaiLabels[$d['Loai_phieu']] ?? $d['Loai_phieu'] ?>
                                             </span>
                                         </td>
@@ -214,11 +242,13 @@
                                         </td>
                                         <td style="text-align: center;">
                                             <div style="display: flex; justify-content: center; gap: 8px;">
-                                                <a href="<?= BASE_URL ?>/admin/disposal-detail/<?= $d['ID_phieu_huy'] ?>" class="btn-icon" title="Xem chi tiết">
+                                                <a href="<?= BASE_URL ?>/admin/disposal-detail/<?= $d['ID_phieu_huy'] ?>"
+                                                    class="btn-icon" title="Xem chi tiết">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 <?php if ($d['Trang_thai'] == 'cho_duyet'): ?>
-                                                    <button onclick="approveDisposal(<?= $d['ID_phieu_huy'] ?>)" class="btn-icon" style="color: var(--admin-success);" title="Duyệt">
+                                                    <button onclick="approveDisposal(<?= $d['ID_phieu_huy'] ?>)" class="btn-icon"
+                                                        style="color: var(--admin-success);" title="Duyệt">
                                                         <i class="fas fa-check"></i>
                                                     </button>
                                                 <?php endif; ?>
@@ -228,11 +258,14 @@
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="8">
+                                    <td colspan="9">
                                         <div style="padding: 60px 20px; text-align: center;">
-                                            <i class="fas fa-inbox" style="font-size: 48px; color: var(--admin-text-light); margin-bottom: 16px;"></i>
-                                            <h3 style="font-size: 16px; color: var(--admin-text-muted);">Chưa có phiếu hủy nào</h3>
-                                            <p style="font-size: 14px; color: var(--admin-text-muted);">Tạo phiếu hủy mới để bắt đầu theo dõi</p>
+                                            <i class="fas fa-inbox"
+                                                style="font-size: 48px; color: var(--admin-text-light); margin-bottom: 16px;"></i>
+                                            <h3 style="font-size: 16px; color: var(--admin-text-muted);">Chưa có phiếu hủy
+                                                nào</h3>
+                                            <p style="font-size: 14px; color: var(--admin-text-muted);">Tạo phiếu hủy mới để
+                                                bắt đầu theo dõi</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -240,31 +273,35 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Pagination Footer -->
                 <?php if (($pagination['last_page'] ?? 1) > 1): ?>
-                <div class="admin-card-footer" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="font-size: 13px; color: var(--admin-text-muted);">
-                        Hiển thị trang <?= $pagination['current_page'] ?> / <?= $pagination['last_page'] ?>
+                    <div class="admin-card-footer"
+                        style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 13px; color: var(--admin-text-muted);">
+                            Hiển thị trang <?= $pagination['current_page'] ?> / <?= $pagination['last_page'] ?>
+                        </div>
+                        <div class="pagination">
+                            <?php if (($pagination['current_page'] ?? 1) > 1): ?>
+                                <a href="?page=<?= ($pagination['current_page'] ?? 1) - 1 ?>" class="page-link"><i
+                                        class="fas fa-chevron-left"></i></a>
+                            <?php else: ?>
+                                <span class="page-link disabled"><i class="fas fa-chevron-left"></i></span>
+                            <?php endif; ?>
+
+                            <?php for ($i = 1; $i <= $pagination['last_page']; $i++): ?>
+                                <a href="?page=<?= $i ?>"
+                                    class="page-link <?= ($i == $pagination['current_page']) ? 'active' : '' ?>"><?= $i ?></a>
+                            <?php endfor; ?>
+
+                            <?php if (($pagination['current_page'] ?? 1) < ($pagination['last_page'] ?? 1)): ?>
+                                <a href="?page=<?= ($pagination['current_page'] ?? 1) + 1 ?>" class="page-link"><i
+                                        class="fas fa-chevron-right"></i></a>
+                            <?php else: ?>
+                                <span class="page-link disabled"><i class="fas fa-chevron-right"></i></span>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                    <div class="pagination">
-                         <?php if (($pagination['current_page'] ?? 1) > 1): ?>
-                            <a href="?page=<?= ($pagination['current_page'] ?? 1) - 1 ?>" class="page-link"><i class="fas fa-chevron-left"></i></a>
-                        <?php else: ?>
-                            <span class="page-link disabled"><i class="fas fa-chevron-left"></i></span>
-                        <?php endif; ?>
-                        
-                        <?php for($i=1; $i<=$pagination['last_page']; $i++): ?>
-                            <a href="?page=<?= $i ?>" class="page-link <?= ($i == $pagination['current_page']) ? 'active' : '' ?>"><?= $i ?></a>
-                        <?php endfor; ?>
-                        
-                         <?php if (($pagination['current_page'] ?? 1) < ($pagination['last_page'] ?? 1)): ?>
-                            <a href="?page=<?= ($pagination['current_page'] ?? 1) + 1 ?>" class="page-link"><i class="fas fa-chevron-right"></i></a>
-                        <?php else: ?>
-                            <span class="page-link disabled"><i class="fas fa-chevron-right"></i></span>
-                        <?php endif; ?>
-                    </div>
-                </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -273,10 +310,10 @@
 
 <script>
     function approveDisposal(id) {
-        if(confirm('Xác nhận duyệt phiếu hủy này? Kho sẽ bị trừ số lượng tương ứng.')) {
+        if (confirm('Xác nhận duyệt phiếu hủy này? Kho sẽ bị trừ số lượng tương ứng.')) {
             const formData = new FormData();
             formData.append('disposal_id', id);
-            
+
             // Lấy CSRF token nếu cần (thường controller check)
             // formData.append('csrf_token', '<?= Session::getCsrfToken() ?>');
 
@@ -284,19 +321,19 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message || 'Duyệt thành công');
-                    location.reload();
-                } else {
-                    alert(data.message || 'Có lỗi xảy ra');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Có lỗi kết nối');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message || 'Duyệt thành công');
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi kết nối');
+                });
         }
     }
 </script>

@@ -1025,7 +1025,7 @@ class Product extends Model {
      */
     public function getBatches($productId) {
         // Updated to use display code from phieu_nhap_kho table
-        // FIX: Thêm subquery loại trừ lô đã có trong phiếu hủy chờ duyệt
+        // Lấy tất cả lô có số lượng còn > 0, không loại trừ toàn bộ
         $sql = "SELECT 
                     ct.ID_chi_tiet_nhap,
                     pn.Ma_hien_thi as Ma_phieu_nhap,
@@ -1036,13 +1036,6 @@ class Product extends Model {
                 JOIN phieu_nhap_kho pn ON ct.ID_phieu_nhap = pn.ID_phieu_nhap
                 WHERE ct.ID_sp = ? 
                 AND ct.So_luong_con > 0
-                AND ct.ID_chi_tiet_nhap NOT IN (
-                    SELECT cth.ID_lo_nhap 
-                    FROM chi_tiet_phieu_huy cth 
-                    JOIN phieu_huy ph ON cth.ID_phieu_huy = ph.ID_phieu_huy 
-                    WHERE ph.Trang_thai IN ('cho_duyet', 'da_duyet')
-                    AND cth.ID_lo_nhap IS NOT NULL
-                )
                 ORDER BY 
                     CASE WHEN ct.Ngay_het_han IS NULL THEN 1 ELSE 0 END, 
                     ct.Ngay_het_han ASC, 

@@ -54,6 +54,11 @@ trait AdminDisposalTrait {
         
         $statusCounts = $disposalModel->countByStatus();
         
+        // Tính tổng giá trị thiệt hại từ phiếu đã duyệt
+        $dateFrom = !empty($filters['tu_ngay']) ? $filters['tu_ngay'] : date('Y-01-01');
+        $dateTo = !empty($filters['den_ngay']) ? $filters['den_ngay'] : date('Y-m-d');
+        $total_value = $disposalModel->getTotalDisposalValue($dateFrom, $dateTo);
+        
         $data = [
             'page_title' => 'Quản lý phiếu hủy - Admin',
             'disposals' => $disposals,
@@ -61,7 +66,8 @@ trait AdminDisposalTrait {
             'total_count' => $totalCount,
             'total_pages' => $totalPages,
             'current_page' => $filters['page'],
-            'status_counts' => $statusCounts
+            'status_counts' => $statusCounts,
+            'total_value' => $total_value
         ];
         
         $this->view('admin/disposals', $data);
@@ -241,7 +247,7 @@ trait AdminDisposalTrait {
             return;
         }
         
-        $id = post('id');
+        $id = post('disposal_id');
         $reason = post('reason', '');
         $disposalModel = $this->model('Disposal');
         

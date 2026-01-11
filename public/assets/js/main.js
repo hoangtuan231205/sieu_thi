@@ -60,8 +60,22 @@ function initDropdownMenus() {
 
         if (!dropdownMenu) return;
 
+        // Function to calculate and update dropdown position
+        function updateDropdownPosition() {
+            const rect = item.getBoundingClientRect();
+            const left = rect.left;
+            const top = rect.bottom;
+
+            // Set CSS variables for fixed positioning
+            item.style.setProperty('--dropdown-left', `${left}px`);
+            item.style.setProperty('--dropdown-top', `${top}px`);
+        }
+
         // Thêm animation khi hover
         item.addEventListener('mouseenter', function () {
+            // Update position before showing
+            updateDropdownPosition();
+
             dropdownMenu.style.display = 'block';
 
             // Kích hoạt animation
@@ -83,6 +97,10 @@ function initDropdownMenus() {
                 }
             }, 300);
         });
+
+        // Update position on scroll and resize
+        window.addEventListener('scroll', updateDropdownPosition, { passive: true });
+        window.addEventListener('resize', updateDropdownPosition, { passive: true });
     });
 }
 

@@ -33,7 +33,7 @@ $statusClasses = ['cho_duyet' => 'pending', 'da_duyet' => 'approved', 'tu_choi' 
                     <i class="fas fa-times"></i>
                     <span>Từ chối</span>
                 </button>
-                <button onclick="approveDisposal(<?= $disposal['ID_phieu_huy'] ?>)" class="btn-admin-primary" style="background: var(--admin-success);">
+                <button onclick="approveDisposal(<?= $disposal['ID_phieu_huy'] ?>)" class="btn-admin-primary" style="background: #7BC043; border-color: #7BC043; color: white;">
                     <i class="fas fa-check"></i>
                     <span>Duyệt phiếu</span>
                 </button>
@@ -217,7 +217,7 @@ $statusClasses = ['cho_duyet' => 'pending', 'da_duyet' => 'approved', 'tu_choi' 
 
 <!-- Reject Modal -->
 <div class="modal fade" id="rejectModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog" style="max-width: 500px;">
         <div class="modal-content" style="border-radius: 12px; border: none;">
             <div class="modal-header" style="border-bottom: 1px solid #f1f5f9;">
                 <h5 class="modal-title" style="font-weight: 600;">Từ chối phiếu hủy</h5>
@@ -227,9 +227,9 @@ $statusClasses = ['cho_duyet' => 'pending', 'da_duyet' => 'approved', 'tu_choi' 
                 <label class="form-label fw-medium">Lý do từ chối <span class="text-danger">*</span></label>
                 <textarea class="form-control" id="rejectReason" rows="4" placeholder="Nhập lý do từ chối phiếu này..." style="border-radius: 8px;"></textarea>
             </div>
-            <div class="modal-footer" style="border-top: 1px solid #f1f5f9;">
-                <button type="button" class="btn-admin-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn-admin-primary" onclick="rejectDisposal()" style="background: var(--admin-danger);">Xác nhận từ chối</button>
+            <div class="modal-footer" style="border-top: 1px solid #f1f5f9; gap: 12px;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="rejectDisposal()">Xác nhận từ chối</button>
             </div>
         </div>
     </div>
@@ -243,7 +243,7 @@ function approveDisposal(id) {
     formData.append('disposal_id', id);
     formData.append('csrf_token', csrfToken);
     
-    fetch(baseUrl + '/public/admin/disposal-approve', {
+    fetch(baseUrl + '/admin/disposal-approve', {
         method: 'POST',
         body: formData,
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -271,7 +271,7 @@ function rejectDisposal() {
     formData.append('reason', reason);
     formData.append('csrf_token', csrfToken);
     
-    fetch(baseUrl + '/public/admin/disposal-reject', {
+    fetch(baseUrl + '/admin/disposal-reject', {
         method: 'POST',
         body: formData,
         headers: { 'X-Requested-With': 'XMLHttpRequest' }

@@ -22,7 +22,8 @@
 .main-header {
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 101;
+    /* CRITICAL: Must be higher than .main-nav (100) to ensure user dropdown appears above navigation dropdowns */
     background: white;
     border-bottom: 1px solid #e5e5e5;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -253,6 +254,13 @@
     /* Mặc định ẩn */
 }
 
+/* CRITICAL: User dropdown must be above navigation dropdowns */
+.user-dropdown .dropdown-menu,
+.user-menu.dropdown .dropdown-menu {
+    z-index: 999999 !important;
+    position: absolute !important;
+}
+
 /* Container cần relative để anchor dropdown */
 .user-dropdown,
 .user-menu.dropdown {
@@ -337,12 +345,15 @@
     background: transparent;
     border-top: 1px solid rgba(123, 192, 67, 0.1);
     padding: 12px 0;
+    position: relative;
+    z-index: 100;
 }
 
 .nav-wrapper {
     display: flex;
     align-items: center;
     gap: 0;
+    overflow: visible;
 }
 
 /* Navigation Menu - Horizontal scroll */
@@ -356,8 +367,32 @@
     width: 100%;
 }
 
+/* Hide scrollbar for cleaner look */
+.nav-menu::-webkit-scrollbar {
+    height: 4px;
+}
+
+.nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-menu::-webkit-scrollbar-thumb {
+    background: rgba(123, 192, 67, 0.3);
+    border-radius: 4px;
+}
+
+.nav-menu::-webkit-scrollbar-thumb:hover {
+    background: rgba(123, 192, 67, 0.5);
+}
+
 .nav-item {
     position: relative;
+}
+
+/* Store dropdown position for fixed positioning */
+.nav-item.has-dropdown {
+    --dropdown-left: 0px;
+    --dropdown-top: 0px;
 }
 
 .nav-link {
@@ -398,9 +433,9 @@
 }
 
 .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
+    position: fixed;
+    left: var(--dropdown-left, 0);
+    top: var(--dropdown-top, 0);
     min-width: 240px;
     background-color: var(--color-white);
     box-shadow: var(--shadow-lg);
@@ -410,7 +445,8 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: var(--transition-normal);
-    z-index: 1000;
+    z-index: 9999;
+    will-change: transform, opacity;
 }
 
 .dropdown-item {
