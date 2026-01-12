@@ -134,21 +134,6 @@
                 <div class="col-lg-3">
                     <div class="admin-card" style="position: sticky; top: 20px;">
                         <div class="admin-card-body">
-                            <!-- Info Alert -->
-                            <div
-                                style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 10px; padding: 16px; margin-bottom: 20px;">
-                                <div style="display: flex; gap: 12px;">
-                                    <i class="fas fa-info-circle" style="color: #3b82f6; margin-top: 2px;"></i>
-                                    <div>
-                                        <p
-                                            style="font-size: 14px; font-weight: 500; color: #1e40af; margin: 0 0 4px 0;">
-                                            Lưu ý quan trọng</p>
-                                        <p style="font-size: 13px; color: #3b82f6; margin: 0;">Phiếu sẽ ở trạng thái
-                                            <strong>Chờ duyệt</strong>. Kho chỉ bị trừ sau khi Admin duyệt phiếu.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
 
                             <!-- Summary -->
                             <div class="summary-box" style="margin-bottom: 20px;">
@@ -186,7 +171,72 @@
     </div>
 </div>
 
+
 <script>
+    // ===== GLOBAL FUNCTIONS - Phải đặt ở đây để inline event handlers có thể gọi =====
+    function updateBatchPrice(idx, select) {
+        const option = select.options[select.selectedIndex];
+        if (option.value) {
+            const price = parseFloat(option.dataset.price) || 0;
+            document.getElementById(`price_${idx}`).value = price;
+            document.getElementById(`priceDisplay_${idx}`).textContent = price.toLocaleString() + 'đ';
+            updateRowTotal(idx);
+        }
+    }
+
+    function updateRowTotal(idx) {
+        const priceInput = document.getElementById(`price_${idx}`);
+        const qtyInput = document.querySelector(`input[name="items[${idx}][So_luong]"]`);
+        const rowTotalEl = document.getElementById(`rowTotal_${idx}`);
+
+        if (!priceInput || !qtyInput || !rowTotalEl) {
+            console.error('Missing elements for row', idx);
+            return;
+        }
+
+        const price = parseFloat(priceInput.value) || 0;
+        const qty = parseInt(qtyInput.value) || 0;
+        const total = price * qty;
+
+        console.log(`Row ${idx}: price=${price}, qty=${qty}, total=${total}`);
+
+        rowTotalEl.textContent = total.toLocaleString() + 'đ';
+        updateSummary();
+    }
+
+    function updateSummary() {
+        let total = 0, count = 0, qty = 0;
+
+        // Tính tổng tiền
+        document.querySelectorAll('[id^="rowTotal_"]').forEach(el => {
+            const value = parseInt(el.textContent.replace(/\D/g, '')) || 0;
+            total += value;
+            count++;
+        });
+
+        // Tính tổng số lượng
+        document.querySelectorAll('input[name$="[So_luong]"]').forEach(el => {
+            const value = parseInt(el.value) || 0;
+            qty += value;
+        });
+
+        console.log(`Summary: total=${total}, count=${count}, qty=${qty}`);
+
+        document.getElementById('totalValue').textContent = total.toLocaleString() + 'đ';
+        document.getElementById('summaryTotal').textContent = total.toLocaleString() + 'đ';
+        document.getElementById('itemCount').textContent = count;
+        document.getElementById('totalQty').textContent = qty;
+    }
+
+    function removeRow(idx) {
+        document.getElementById(`row_${idx}`)?.remove();
+        updateSummary();
+        if (document.getElementById('itemsBody').children.length === 0) {
+            document.getElementById('itemsBody').innerHTML = `<tr id="noItemRow"><td colspan="6" style="text-align: center; padding: 40px 20px;"><i class="fas fa-box-open" style="font-size: 36px; color: var(--admin-text-light); display: block; margin-bottom: 12px;"></i><p style="color: var(--admin-text-muted); margin: 0;">Tìm và thêm sản phẩm ở trên</p></td></tr>`;
+        }
+    }
+    // ===== END GLOBAL FUNCTIONS =====
+
     document.addEventListener('DOMContentLoaded', function () {
         const baseUrl = '<?= BASE_URL ?>';
         let itemIndex = 0;
@@ -269,7 +319,7 @@
         }
 
         // Event delegation for suggestion items
-        suggestions.addEventListener('click', function(e) {
+        suggestions.addEventListener('click', function (e) {
             const suggestionItem = e.target.closest('.suggestion-item');
             if (suggestionItem) {
                 e.stopPropagation();
@@ -304,7 +354,7 @@
             <input type="hidden" name="items[${itemIndex}][Gia_nhap]" value="${defaultPrice}" id="price_${itemIndex}">
         </td>
         <td><select class="form-select form-select-sm" name="items[${itemIndex}][ID_lo_nhap]" onchange="updateBatchPrice(${itemIndex}, this)" style="border-radius: 6px; min-width: 230px; font-weight: 500;">${batchOptions}</select></td>
-        <td><input type="number" class="form-control form-control-sm" name="items[${itemIndex}][So_luong]" min="1" value="${prefillQty}" onchange="updateRowTotal(${itemIndex})" required style="border-radius: 6px;min-width: 95px; text-align: center;"></td>
+        <td><input type="number" class="form-control form-control-sm" name="items[${itemIndex}][So_luong]" min="1" value="${prefillQty}" oninput="updateRowTotal(${itemIndex})" onchange="updateRowTotal(${itemIndex})" required style="border-radius: 6px;min-width: 95px; text-align: center;"></td>
         <td id="priceDisplay_${itemIndex}">${Number(defaultPrice).toLocaleString()}đ</td>
         <td id="rowTotal_${itemIndex}" style="font-weight: 600;">${Number(defaultPrice * prefillQty).toLocaleString()}đ</td>
         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(${itemIndex})" style="border-radius: 6px;"><i class="fas fa-trash"></i></button></td>
@@ -312,46 +362,6 @@
             document.getElementById('itemsBody').appendChild(row);
             itemIndex++;
             updateSummary();
-        }
-
-        function updateBatchPrice(idx, select) {
-            const option = select.options[select.selectedIndex];
-            if (option.value) {
-                const price = parseFloat(option.dataset.price) || 0;
-                document.getElementById(`price_${idx}`).value = price;
-                document.getElementById(`priceDisplay_${idx}`).textContent = price.toLocaleString() + 'đ';
-                updateRowTotal(idx);
-            }
-        }
-
-        function updateRowTotal(idx) {
-            const price = parseFloat(document.getElementById(`price_${idx}`).value) || 0;
-            const qty = parseInt(document.querySelector(`input[name="items[${idx}][So_luong]"]`).value) || 0;
-            document.getElementById(`rowTotal_${idx}`).textContent = (price * qty).toLocaleString() + 'đ';
-            updateSummary();
-        }
-
-        function updateSummary() {
-            let total = 0, count = 0, qty = 0;
-            document.querySelectorAll('[id^="rowTotal_"]').forEach(el => {
-                total += parseInt(el.textContent.replace(/\D/g, '')) || 0;
-                count++;
-            });
-            document.querySelectorAll('input[name$="[So_luong]"]').forEach(el => {
-                qty += parseInt(el.value) || 0;
-            });
-            document.getElementById('totalValue').textContent = total.toLocaleString() + 'đ';
-            document.getElementById('summaryTotal').textContent = total.toLocaleString() + 'đ';
-            document.getElementById('itemCount').textContent = count;
-            document.getElementById('totalQty').textContent = qty;
-        }
-
-        function removeRow(idx) {
-            document.getElementById(`row_${idx}`)?.remove();
-            updateSummary();
-            if (document.getElementById('itemsBody').children.length === 0) {
-                document.getElementById('itemsBody').innerHTML = `<tr id="noItemRow"><td colspan="6" style="text-align: center; padding: 40px 20px;"><i class="fas fa-box-open" style="font-size: 36px; color: var(--admin-text-light); display: block; margin-bottom: 12px;"></i><p style="color: var(--admin-text-muted); margin: 0;">Tìm và thêm sản phẩm ở trên</p></td></tr>`;
-            }
         }
 
         document.getElementById('disposalForm').addEventListener('submit', function (e) {
@@ -363,31 +373,31 @@
         // Auto-add product from prefill data (từ trang cảnh báo hết hạn)
         // NOTE: Chạy trực tiếp sau khi các function được định nghĩa, không cần nested DOMContentLoaded
         <?php if (!empty($prefill_product)): ?>
-            // Add prefilled product automatically (từ trang cảnh báo hết hạn)
-            const prefillProduct = {
-                ID_sp: <?= (int) $prefill_product['ID_sp'] ?>,
-                Ma_hien_thi: '<?= addslashes($prefill_product['Ma_hien_thi'] ?? '') ?>',
-                Ten: '<?= addslashes($prefill_product['Ten'] ?? '') ?>',
-                Don_vi_tinh: '<?= addslashes($prefill_product['Don_vi_tinh'] ?? '') ?>',
-                So_luong_ton: <?= (int) ($prefill_product['So_luong_ton'] ?? 0) ?>,
-                Gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
-            };
+        // Add prefilled product automatically (từ trang cảnh báo hết hạn)
+        const prefillProduct = {
+            ID_sp: <?= (int) $prefill_product['ID_sp'] ?>,
+            Ma_hien_thi: '<?= addslashes($prefill_product['Ma_hien_thi'] ?? '') ?>',
+            Ten: '<?= addslashes($prefill_product['Ten'] ?? '') ?>',
+            Don_vi_tinh: '<?= addslashes($prefill_product['Don_vi_tinh'] ?? '') ?>',
+            So_luong_ton: <?= (int) ($prefill_product['So_luong_ton'] ?? 0) ?>,
+            Gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
+        };
 
-            // Create batches array with prefilled batch info
-            const prefillBatches = [];
-            <?php if (!empty($prefill_batch_code)): ?>
-                prefillBatches.push({
-                    ID_chi_tiet_nhap: <?= (int) ($prefill_batch_id ?? 0) ?>,
-                    Ma_phieu_nhap: '<?= addslashes($prefill_batch_code ?? '') ?>',
-                    So_luong_con: <?= (int) $prefill_quantity ?>,
-                    Don_gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
-                });
-            <?php endif; ?>
+        // Create batches array with prefilled batch info
+        const prefillBatches = [];
+        <?php if (!empty($prefill_batch_code)): ?>
+        prefillBatches.push({
+            ID_chi_tiet_nhap: <?= (int) ($prefill_batch_id ?? 0) ?>,
+            Ma_phieu_nhap: '<?= addslashes($prefill_batch_code ?? '') ?>',
+            So_luong_con: <?= (int) $prefill_quantity ?>,
+            Don_gia_nhap: <?= (int) ($prefill_price ?? 0) ?>
+        });
+        <?php endif; ?>
 
-            addProductRow(prefillProduct, prefillBatches, <?= (int) $prefill_quantity ?>);
+        addProductRow(prefillProduct, prefillBatches, <?= (int) $prefill_quantity ?>);
 
-            // Show success notification
-            showNotification('Đã tự động thêm sản phẩm "' + prefillProduct.Ten + '" - Số lượng: <?= (int) $prefill_quantity ?>', 'success');
+        // Show success notification
+        showNotification('Đã tự động thêm sản phẩm "' + prefillProduct.Ten + '" - Số lượng: <?= (int) $prefill_quantity ?>', 'success');
         <?php endif; ?>
     }); // End DOMContentLoaded
 </script>
