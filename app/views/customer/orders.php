@@ -747,13 +747,20 @@ document.getElementById('confirmCancelBtn').addEventListener('click', function()
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf_token"]').content
         }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload();
+            // Hiển thị thông báo với số đơn hàng
+            if (typeof showNotification === 'function') {
+                showNotification(data.message || 'Đã hủy đơn hàng thành công', 'success');
+            }
+            // Đóng modal trước khi reload
+            bootstrap.Modal.getInstance(document.getElementById('cancelModal'))?.hide();
+            setTimeout(() => location.reload(), 1500);
         } else {
             alert(data.message || 'Hủy đơn hàng thất bại');
             btn.disabled = false;

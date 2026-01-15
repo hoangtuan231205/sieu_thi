@@ -173,7 +173,7 @@ class OrderController extends Controller {
             ]);
             
             if ($this->isAjax()) {
-                $this->json(['success' => true, 'message' => 'Đã hủy đơn hàng thành công']);
+                $this->json(['success' => true, 'message' => 'Đã hủy đơn hàng #' . $orderId . ' thành công', 'order_id' => $orderId]);
                 return;
             }
             Session::flash('success', 'Đã hủy đơn hàng thành công');
