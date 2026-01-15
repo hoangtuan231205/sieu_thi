@@ -168,7 +168,7 @@ class Model {
         
         $sql = "UPDATE {$this->table} SET " . implode(', ', $set) . " 
                 WHERE {$this->primaryKey} = ?";
-        
+        // implode(', ', $set) = "name = ?, email = ?"
         $this->db->query($sql, $params);
         
         return $this->db->rowCount() > 0;

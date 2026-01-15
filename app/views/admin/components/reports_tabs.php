@@ -56,9 +56,6 @@ if (!function_exists('isTabActive')) {
 </style>
 
 <div class="section-tabs">
-    <a href="<?= BASE_URL ?>/admin/reports" class="tab-item <?= isTabActive('/reports') && !strpos($currentUri, 'report-') ? 'active' : '' ?>">
-        <i class="fas fa-chart-bar"></i> Tổng quan
-    </a>
     <a href="<?= BASE_URL ?>/admin/report-profit" class="tab-item <?= isTabActive('report-profit') ?>">
         <i class="fas fa-dollar-sign"></i> Doanh thu & Lợi nhuận
     </a>

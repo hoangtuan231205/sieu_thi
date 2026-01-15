@@ -25,8 +25,8 @@ class Session {
     public static function start() {
         if (session_status() === PHP_SESSION_NONE) {
             // Cấu hình session
-            ini_set('session.cookie_httponly', 1);  // Bảo mật: không cho JS đọc cookie
-            ini_set('session.use_only_cookies', 1); // Chỉ dùng cookies
+            ini_set('session.cookie_httponly', 1);  //  không cho JS đọc cookie
+            ini_set('session.use_only_cookies', 1); // Chỉ dùng cookies (ko cho truyền sessionID qua URL)
             ini_set('session.cookie_lifetime', SESSION_LIFETIME);
             
             session_name(SESSION_NAME);
@@ -66,7 +66,7 @@ class Session {
      * $username = Session::get('username', 'Guest');
      */
     public static function get($key, $default = null) {
-        return $_SESSION[$key] ?? $default;
+        return $_SESSION[$key] ?? $default; // Có gt1 thì lấy gt1 , nếu ko có gt1 thì lấy gt2 
     }
     
     /**
@@ -178,9 +178,7 @@ class Session {
         return $flashes;
     }
     
-    // =========================================================================
     // CÁC HÀM LIÊN QUAN ĐẾN AUTHENTICATION (Đăng nhập)
-    // =========================================================================
     
     /**
      * Kiểm tra người dùng đã đăng nhập chưa

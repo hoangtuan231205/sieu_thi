@@ -1085,10 +1085,11 @@ class AdminController extends Controller {
             return;
         }
         
-        // Đọc JSON body
+        // Đọc JSON body (nếu client gửi với Content-Type: application/json)
+        // Phải đọc raw input và parse JSON thủ công
         $input = json_decode(file_get_contents('php://input'), true);
         
-        // CSRF Check
+        // Kiểm tra csrf token
         if (!Middleware::verifyCsrf($input['csrf_token'] ?? '')) {
             $this->json(['success' => false, 'message' => 'Phiên làm việc hết hạn, vui lòng tải lại trang']);
             return;
@@ -1097,20 +1098,20 @@ class AdminController extends Controller {
         $orderIds = $input['order_ids'] ?? [];
         $newStatus = $input['new_status'] ?? '';
         
-        // Validate input
+        // Kiểm tra input 
         if (empty($orderIds) || !is_array($orderIds)) {
             $this->json(['success' => false, 'message' => 'Không có đơn hàng nào được chọn']);
             return;
         }
         
-        // Validate new status (chỉ cho phép 2 trạng thái tiến tới)
+        // in_array($needle, $haystack) kiểm tra $needle có trong $haystack không
         $allowedNextStatuses = ['dang_giao', 'da_giao'];
         if (!in_array($newStatus, $allowedNextStatuses)) {
             $this->json(['success' => false, 'message' => 'Trạng thái mới không hợp lệ']);
             return;
         }
-        
-        // Xác định trạng thái hiện tại hợp lệ dựa trên trạng thái mới
+        // trạng thái mới là dang_giao thì trạng thái hiện tại phải là dang_xu_ly
+        // trạng thái mới là da_giao thì trạng thái hiện tại phải là dang_giao
         $validCurrentStatus = ($newStatus === 'dang_giao') ? 'dang_xu_ly' : 'dang_giao';
         
         $successCount = 0;
@@ -1119,7 +1120,7 @@ class AdminController extends Controller {
         
         foreach ($orderIds as $orderId) {
             $orderId = (int)$orderId;
-            if ($orderId <= 0) continue;
+            if ($orderId <= 0) continue; // bỏ qua id nếu sai 
             
             // Kiểm tra đơn hàng
             $order = $this->orderModel->findById($orderId);
@@ -1178,17 +1179,7 @@ class AdminController extends Controller {
             ]);
         }
     }
-    
-    // =========================================================================
-    // USER METHODS → AdminUserTrait
-    // Method users() is implemented in AdminUserTrait
-    // =========================================================================
-    
-    // =========================================================================
-    // SUPPLIER METHODS → AdminSupplierTrait
-    // Methods: suppliers, supplierGet, supplierAdd, supplierUpdate, supplierDelete
-    // =========================================================================
-    
+
     /**
      * ==========================================================================
      * METHOD: exportProducts() - XUẤT EXCEL SẢN PHẨM

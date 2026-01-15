@@ -1,6 +1,4 @@
 <?php
-
-
 class App {
     
     /**
@@ -76,7 +74,6 @@ class App {
         // TRƯỜNG HỢP 3: /admin/* (ADMIN ROUTES)
         if ($url[0] === 'admin') {
             $this->controller = 'AdminController';
-            
             // Admin routes:
             // /admin → dashboard
             // /admin/products → products list
@@ -96,7 +93,6 @@ class App {
         // TRƯỜNG HỢP 4: /warehouse/* (WAREHOUSE ROUTES)
         if ($url[0] === 'warehouse') {
             $this->controller = 'WarehouseController';
-            
             // Warehouse routes:
             // /warehouse → dashboard
             // /warehouse/imports → import list
@@ -113,7 +109,6 @@ class App {
         }
         
         // TRƯỜNG HỢP 5: /products, /cart, /checkout... (CUSTOMER ROUTES)
-        
         // Danh sách các controllers cho khách hàng
         $customerControllers = [
             'products' => 'ProductController',
@@ -175,7 +170,7 @@ class App {
             return;
         }
         
-        // Gọi method với params
+        // giống như $this->controller->$methodName($params);
         call_user_func_array([$this->controller, $methodName], $params);
     }
     

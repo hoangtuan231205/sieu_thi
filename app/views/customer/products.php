@@ -296,12 +296,6 @@ if (!empty($filters['category_id']) && !empty($categories)) {
     min-height: 40px;
 }
 
-.product-rating {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 12px;
-}
 
 .stars {
     color: #fbbf24;
@@ -457,7 +451,7 @@ if (!empty($filters['category_id']) && !empty($categories)) {
 
 <!-- Breadcrumb -->
 <div class="breadcrumb-nav">
-    <a href="<?= BASE_URL ?>/">🏠 Trang chủ</a>
+    <a href="<?= BASE_URL ?>/"> Trang chủ</a>
     <span>›</span>
     <a href="<?= BASE_URL ?>/products">Sản phẩm</a>
     <?php if ($currentCategoryName !== 'Sản phẩm'): ?>
@@ -564,18 +558,6 @@ if (!empty($filters['category_id']) && !empty($categories)) {
                     <a href="<?= BASE_URL ?>/products/detail/<?= $product['ID_sp'] ?>" style="text-decoration: none;">
                         <h3 class="product-name"><?= htmlspecialchars($product['Ten']) ?></h3>
                     </a>
-                    
-                    <!-- Rating -->
-                    <div class="product-rating">
-                        <div class="stars">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                        <span class="rating-value">(4.5)</span>
-                    </div>
                     
                     <!-- Price -->
                     <div class="product-price">

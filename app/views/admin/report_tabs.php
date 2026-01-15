@@ -13,10 +13,8 @@ $current_page = basename($_SERVER['REQUEST_URI'], '?' . $_SERVER['QUERY_STRING']
 $current_page = strtok($current_page, '?');
 
 $report_tabs = [
-    'reports' => ['icon' => 'fas fa-chart-pie', 'label' => 'Tổng quan', 'url' => BASE_URL . '/admin/reports'],
     'report-profit' => ['icon' => 'fas fa-dollar-sign', 'label' => 'Doanh thu & Lợi nhuận', 'url' => BASE_URL . '/admin/report-profit'],
     'report-expiry' => ['icon' => 'fas fa-clock', 'label' => 'Hàng sắp hết hạn', 'url' => BASE_URL . '/admin/report-expiry'],
-    'report-top-products' => ['icon' => 'fas fa-star', 'label' => 'SP Bán chạy', 'url' => BASE_URL . '/admin/report-top-products'],
 ];
 ?>
 

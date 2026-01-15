@@ -23,9 +23,7 @@ class CheckoutController extends Controller {
         $cartItems = [];
         $isDirectCheckout = false;
         
-        // =====================================================================
         // KIỂM TRA LUỒNG: DIRECT CHECKOUT hay CART CHECKOUT
-        // =====================================================================
         
         $selectedItems = post('items', get('items', ''));
         
@@ -88,9 +86,7 @@ class CheckoutController extends Controller {
             }
         }
         
-        // =====================================================================
         // VALIDATE STOCK CHO TẤT CẢ SẢN PHẨM
-        // =====================================================================
         $errors = [];
         foreach ($cartItems as $item) {
             if ($item['So_luong_ton'] == 0) {
@@ -109,9 +105,7 @@ class CheckoutController extends Controller {
             return;
         }
         
-        // =====================================================================
         // TÍNH TOÁN TỔNG TIỀN
-        // =====================================================================
         $subtotal = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item['Thanh_tien'];
@@ -120,15 +114,11 @@ class CheckoutController extends Controller {
         $shippingFee = ($subtotal >= 150000) ? 0 : 20000;
         $total = $subtotal + $shippingFee;
         
-        // =====================================================================
         // LẤY THÔNG TIN USER
-        // =====================================================================
         $userModel = $this->model('User');
         $user = $userModel->findById($userId);
         
-        // =====================================================================
         // CHUẨN BỊ DATA CHO VIEW
-        // =====================================================================
         $data = [
             'page_title' => 'Thanh toán - FreshMart',
             'cart_items' => $cartItems,
@@ -254,9 +244,7 @@ class CheckoutController extends Controller {
         }
         
         try {
-            // =====================================================================
             // TẠO ĐƠN HÀNG
-            // =====================================================================
             if ($isDirectCheckout) {
                 // Tạo đơn hàng từ direct checkout
                 $orderId = $this->orderModel->createOrderFromDirectCheckout(
@@ -302,9 +290,7 @@ class CheckoutController extends Controller {
                 'type' => $isDirectCheckout ? 'direct' : 'cart'
             ]);
             
-            // =====================================================================
             // CHUYỂN HƯỚNG VỀ TRANG ĐƠN HÀNG CỦA TÔI
-            // =====================================================================
             Session::flash('success', 'Đặt hàng thành công! Mã đơn hàng: #' . $orderId);
             redirect(BASE_URL . '/orders');
             

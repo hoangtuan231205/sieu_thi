@@ -7,19 +7,19 @@
 
 $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 
-// Helper to check if current URL matches
+// Hàm kiểm tra URL hiện tại có khớp không
 function isActive($pattern) {
     global $currentUri;
     return strpos($currentUri, $pattern) !== false ? 'active' : '';
 }
 
-// Check for dashboard (exact match)
+// Kiểm tra trang chủ (khớp chính xác)
 function isDashboard() {
     global $currentUri;
     return preg_match('#/admin/?$#', $currentUri) || strpos($currentUri, '/admin/dashboard') !== false;
 }
 
-// Check if any submenu item is active
+// Kiểm tra có mục submenu nào đang active không
 function isGroupActive($patterns) {
     global $currentUri;
     foreach ($patterns as $pattern) {
@@ -30,11 +30,11 @@ function isGroupActive($patterns) {
     return false;
 }
 
-// Get current user info
+// Lấy thông tin người dùng hiện tại
 $userName = $_SESSION['user_name'] ?? 'Admin';
 $userInitials = strtoupper(substr($userName, 0, 2));
 
-// Define menu groups for auto-expand
+// Định nghĩa nhóm menu để tự động mở rộng
 $khoHangPatterns = ['warehouse', 'products', 'report-expiry', 'disposal'];
 $quanLyPatterns = ['orders', 'categories', 'suppliers'];
 ?>
@@ -112,13 +112,14 @@ $quanLyPatterns = ['orders', 'categories', 'suppliers'];
             </div>
         </div>
         
+        
         <!-- Doanh thu -->
         <a href="<?= BASE_URL ?>/admin/report-profit" class="sidebar-nav-item <?= isActive('report-profit') ?>">
             <i class="fas fa-chart-line"></i>
             <span>Doanh thu</span>
         </a>
+
         
-        <!-- Khách hàng -->
         <a href="<?= BASE_URL ?>/admin/users" class="sidebar-nav-item <?= isActive('users') ?>">
             <i class="fas fa-users"></i>
             <span>Khách hàng</span>
@@ -143,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuGroups = document.querySelectorAll('.menu-group');
     const STORAGE_KEY = 'admin_sidebar_state';
     
-    // Load saved state from localStorage
+    // Tải trạng thái đã lưu từ localStorage
     function loadState() {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -156,31 +157,31 @@ document.addEventListener('DOMContentLoaded', function() {
         return {};
     }
     
-    // Save state to localStorage
+    // Lưu trạng thái vào localStorage
     function saveState(state) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
     
-    // Initialize menu groups
+    // Khởi tạo các nhóm menu
     const state = loadState();
     
     menuGroups.forEach(group => {
         const groupId = group.dataset.group;
         const toggle = group.querySelector('.menu-group-toggle');
         
-        // Initial state from PHP (class 'open' already added if active)
+        // Trạng thái ban đầu từ PHP (class 'open' đã được thêm nếu active)
         const hasActiveItem = group.classList.contains('open');
         const savedOpen = state[groupId] === true;
         
-        // Helper to check if any OTHER group is already open (to enforce strict accordion)
-        // But for initialization, we prioritize PHP active state.
+        // Kiểm tra có nhóm KHÁC nào đang mở không (để áp dụng accordion nghiêm ngặt)
+        // Nhưng khi khởi tạo, ưu tiên trạng thái active từ PHP.
         
         if (hasActiveItem) {
             group.classList.add('open');
         } else if (savedOpen) {
-             // Only open if no other group is currently open? 
-             // Or just open it (and let user click to close others). 
-             // For simplicity and user preference stability, let's open it.
+             // Chỉ mở nếu không có nhóm nào đang mở? 
+             // Hoặc cứ mở nó (và để người dùng click để đóng các nhóm khác). 
+             // Để đơn giản và ổn định tùy chọn người dùng, hãy mở nó.
             group.classList.add('open');
         }
 
@@ -194,12 +195,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 g.classList.remove('open');
             });
             
-            // If it wasn't open, open it now
+            // Nếu chưa mở, mở nó bây giờ
             if (!isOpen) {
                 group.classList.add('open');
             }
             
-            // Save state (only the currently open one)
+            // Lưu trạng thái (chỉ nhóm đang mở)
             const newState = {};
             menuGroups.forEach(g => {
                 if (g.classList.contains('open')) {

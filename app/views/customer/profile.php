@@ -358,21 +358,6 @@ include __DIR__ . '/../layouts/header.php';
     position: relative;
 }
 
-.profile-verified-badge {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--primary-600, #5FA332);
-    font-size: 0.75rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    background: var(--primary-100, #E2FBBD);
-    padding: 4px 10px;
-    border-radius: 12px;
-}
 
 /* Error message */
 .field-error {
@@ -574,9 +559,7 @@ include __DIR__ . '/../layouts/header.php';
                                 <input type="email" name="email" id="inputEmail" class="profile-form-input" 
                                        value="<?= htmlspecialchars($user['email'] ?? '') ?>" required
                                        style="padding-right: 120px;">
-                                <span class="profile-verified-badge">
-                                    <i class="fas fa-check-circle"></i> Đã xác thực
-                                </span>
+
                             </div>
                             <span class="field-error" id="errorEmail"></span>
                         </div>

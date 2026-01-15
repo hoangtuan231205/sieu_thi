@@ -179,14 +179,6 @@ class Order extends Model {
                         $batch['Don_gia_nhap'],            // Giá vốn từ lô
                         $batch['ID_chi_tiet_nhap']         // ID lô (cho trigger trừ kho)
                     ]);
-                    
-                    // 1. Trừ kho tổng (san_pham) - ĐÃ XỬ LÝ BỞI TRIGGER `trg_dat_hang_tru_kho`
-                    // $this->db->query($updateProductStockSql, [$batchQuantity, $item['ID_sp']]);
-                    
-                    // 2. Trừ kho lô (chi_tiet_phieu_nhap) - nếu có ID lô - ĐÃ XỬ LÝ BỞI TRIGGER
-                    // if (!empty($batch['ID_chi_tiet_nhap'])) {
-                    //    $this->db->query($updateBatchStockSql, [$batchQuantity, $batch['ID_chi_tiet_nhap']]);
-                    // }
                 }
             }
             
@@ -296,14 +288,7 @@ class Order extends Model {
                     $batch['Don_gia_nhap'],        // Giá vốn từ lô FEFO
                     $batch['ID_chi_tiet_nhap']     // ID lô (cho trigger trừ kho)
                 ]);
-                
-                // 1. Trừ kho tổng (san_pham) - ĐÃ XỬ LÝ BỞI TRIGGER
-                // $this->db->query($updateProductStockSql, [$batchQuantity, $productData['ID_sp']]);
-                
-                // 2. Trừ kho lô (chi_tiet_phieu_nhap) - nếu có ID lô - ĐÃ XỬ LÝ BỞI TRIGGER
-                // if (!empty($batch['ID_chi_tiet_nhap'])) {
-                //    $this->db->query($updateBatchStockSql, [$batchQuantity, $batch['ID_chi_tiet_nhap']]);
-                // }
+               
             }
             
             // Commit transaction
@@ -319,9 +304,7 @@ class Order extends Model {
     }
     
     /**
-     * ==========================================================================
      * QUẢN LÝ ĐƠN HÀNG (CUSTOMER)
-     * ==========================================================================
      */
     
     /**

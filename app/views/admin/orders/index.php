@@ -308,7 +308,7 @@ function getStatusLabel($status) {
 <?php include __DIR__ . '/../layouts/footer.php'; ?>
 
 <script>
-// Bulk Order Status Update Logic
+// Logic cập nhật trạng thái đơn hàng hàng loạt
 const STATUS_FLOW = {
     'dang_xu_ly': 'dang_giao',
     'dang_giao': 'da_giao',
@@ -322,14 +322,14 @@ const STATUS_LABELS = {
     'huy': 'Trả hàng / Hủy'
 };
 
-// Select All checkbox
+// Checkbox chọn tất cả
 document.getElementById('selectAll')?.addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.order-checkbox');
     checkboxes.forEach(cb => cb.checked = this.checked);
     updateBulkButton();
 });
 
-// Individual checkboxes
+// Các checkbox riêng lẻ
 document.querySelectorAll('.order-checkbox').forEach(cb => {
     cb.addEventListener('change', updateBulkButton);
 });
@@ -341,7 +341,7 @@ function updateBulkButton() {
     
     if (checked.length > 0) {
         btn.style.display = 'inline-flex';
-        countSpan.textContent = checked.length;
+        countSpan.textContent = checked.length;  // cập nhật nội dung hiển thị đếm số lượng đơn hàng được chọn
     } else {
         btn.style.display = 'none';
     }
@@ -354,7 +354,7 @@ function bulkUpdateStatus() {
         return;
     }
     
-    // Collect order IDs and statuses
+    // Thu thập ID đơn hàng và trạng thái
     const orders = [];
     let firstStatus = null;
     let hasError = false;
@@ -364,21 +364,21 @@ function bulkUpdateStatus() {
         const id = cb.dataset.id;
         const status = cb.dataset.status;
         
-        // Check for cancelled orders
+        // Kiểm tra đơn hàng đã hủy
         if (status === 'huy') {
             hasError = true;
             errorMessage = 'Đơn hàng đã hủy không thể cập nhật trạng thái!';
             return;
         }
         
-        // Check for final status
+        // Kiểm tra trạng thái cuối cùng
         if (status === 'da_giao') {
             hasError = true;
             errorMessage = 'Đơn hàng đã giao không thể chuyển tiếp!';
             return;
         }
         
-        // Check same status
+        // Kiểm tra cùng trạng thái
         if (firstStatus === null) {
             firstStatus = status;
         } else if (firstStatus !== status) {
@@ -399,17 +399,16 @@ function bulkUpdateStatus() {
     const currentLabel = STATUS_LABELS[firstStatus];
     const nextLabel = STATUS_LABELS[nextStatus];
     
-    // Confirmation
     if (!confirm(`Bạn có chắc chắn muốn chuyển ${orders.length} đơn hàng từ "${currentLabel}" sang "${nextLabel}"?`)) {
         return;
     }
     
-    // Send AJAX request
+    // Gửi yêu cầu AJAX
     fetch('<?= BASE_URL ?>/admin/bulk-update-order-status', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
+            'Content-Type': 'application/json', // Dữ liệu gửi đi là JSON
+            'X-Requested-With': 'XMLHttpRequest' // Báo đây là AJAX request
         },
         body: JSON.stringify({
             order_ids: orders,
@@ -417,7 +416,7 @@ function bulkUpdateStatus() {
             csrf_token: '<?= Session::getCsrfToken() ?>'
         })
     })
-    .then(r => r.json())
+    .then(r => r.json()) // Chuyển response thành JSON
     .then(data => {
         if (data.success) {
             alert(data.message || 'Cập nhật thành công!');
@@ -431,4 +430,9 @@ function bulkUpdateStatus() {
         alert('Lỗi kết nối server!');
     });
 }
+// $_POST chỉ nhận được khi client gửi với:
+// Content-Type: application/x-www-form-urlencoded hoặc multipart/form-data
+
+// Còn json_decode(file_get_contents('php://input')) nhận được:
+// Content-Type: application/json
 </script>

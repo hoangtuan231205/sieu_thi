@@ -5,7 +5,7 @@
  * Reference: admin-modern.css
  */
 
-// Data from controller
+// Dữ liệu từ controller
 $suppliers = $suppliers ?? [];
 $pagination = $pagination ?? ['total' => 0, 'current_page' => 1, 'last_page' => 1, 'per_page' => 12];
 $stats = $stats ?? ['all' => 0, 'active' => 0, 'inactive' => 0];
@@ -183,11 +183,11 @@ $csrf_token = $csrf_token ?? '';
                         $lastPage = $pagination['last_page'] ?? 1;
                         $currentPage = $pagination['current_page'] ?? 1;
                         
-                        // Logic to show pages similar to Products
+                        // Logic hiển thị số trang tương tự như Products
                         if ($lastPage <= 7) {
                              $showPages = range(1, $lastPage);
                         } else {
-                             // Complex logic if needed, but products.php effectively shows 1-5 and Last. 
+                             // Logic phức tạp nếu cần, nhưng products.php hiện thị 1-5 và trang cuối
                              // Wait, products.php code I saw was: for ($i = 1; $i <= min($lastPage, 5); $i++) ... if ($lastPage > 5) show last.
                              // I will strictly follow that logic for consistency.
                              $showPages = range(1, min($lastPage, 5));
@@ -279,7 +279,7 @@ $csrf_token = $csrf_token ?? '';
 </div>
 
 <script>
-// Modal Functions matching products.php style
+// Các hàm Modal theo style products.php
 function openAddModal() {
     document.getElementById('supplierForm').reset();
     document.getElementById('supplierId').value = '';
@@ -289,7 +289,7 @@ function openAddModal() {
 
 function openEditModal(supplier) {
     document.getElementById('supplierId').value = supplier.ID_ncc;
-    // Map controller field names (Note: View table uses DB columns, Form uses generic names for controller)
+    // Ánh xạ tên trường controller (Lưu ý: Bảng view dùng cột DB, Form dùng tên chung cho controller)
     document.getElementById('supplierName').value = supplier.Ten_ncc;
     document.getElementById('supplierContact').value = supplier.Nguoi_lien_he;
     document.getElementById('supplierPhone').value = supplier.Sdt;
@@ -308,7 +308,7 @@ function handleSupplierSubmit(e) {
     const formData = new FormData(form);
     const id = formData.get('id');
     
-    // Determine URL based on ID existence
+    // Xác định URL dựa trên ID có tồn tại hay không
     const url = id ? '<?= BASE_URL ?>/admin/supplier-update' : '<?= BASE_URL ?>/admin/supplier-add';
     
     fetch(url, {
@@ -335,8 +335,8 @@ function closeModal() {
     document.getElementById('supplierModal').classList.add('hidden');
 }
 
-function closeDeleteModal() { // For compatibility
-    // Implement delete modal if needed or use confirm
+function closeDeleteModal() { // Để tương thích
+    // Triển khai modal xóa nếu cần hoặc sử dụng confirm
 }
 
 function deleteSupplier(id, name) {
@@ -366,7 +366,7 @@ function deleteSupplier(id, name) {
     }
 }
 
-// Close modals when clicking outside
+// Đóng modal khi click bên ngoài
 window.onclick = function(event) {
     if (event.target.classList.contains('modal-overlay')) {
         event.target.classList.add('hidden');

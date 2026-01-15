@@ -156,7 +156,7 @@
             <div class="section-header">
                 <div class="section-header-left">
                     <div class="section-header-accent"></div>
-                    <h2 class="section-title">Rau Củ Tươi Sống</h2>
+                    <h2 class="section-title">Sản phẩm bán chạy</h2>
                 </div>
                 <a href="<?= BASE_URL ?>/products" class="view-all-link">
                     Xem tất cả <i class="fas fa-arrow-right"></i>
@@ -190,10 +190,7 @@
                             </div>
                             
                             <!-- Product Info -->
-                            <div class="product-info">
-                                <!-- Category Label -->
-                                <p class="product-category">Nông Sản Sạch</p>
-                                
+                            <div class="product-info">                          
                                 <a href="<?= BASE_URL ?>/products/detail/<?= $product['ID_sp'] ?>" style="text-decoration: none;">
                                     <h3 class="product-name"><?= htmlspecialchars($product['Ten']) ?></h3>
                                 </a>
@@ -201,18 +198,6 @@
                                 <!-- Price -->
                                 <div class="product-price">
                                     <?= number_format($product['Gia_tien'], 0, ',', '.') ?>₫
-                                </div>
-                                
-                                <!-- Rating -->
-                                <div class="product-rating">
-                                    <div class="stars">
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star"></i>
-                                        <i class="fas fa-star-half-alt"></i>
-                                    </div>
-                                    <span class="rating-value">(42 đánh giá)</span>
                                 </div>
                             </div>
                             

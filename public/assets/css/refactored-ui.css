@@ -326,8 +326,7 @@ h1,
     line-height: var(--line-height-tight);
 }
 
-h2,
-.h2,
+
 h3,
 .h3 {
     font-size: 15px;
@@ -533,27 +532,6 @@ a:hover {
     color: #94a3b8;
     text-decoration: line-through;
     margin-left: 6px;
-}
-
-/* Rating - yellow stars */
-.product-card-standard .product-rating {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    font-size: 11px;
-}
-
-.product-card-standard .product-rating .stars {
-    color: #facc15;
-    display: flex;
-    gap: 1px;
-}
-
-.product-card-standard .product-rating .rating-value {
-    color: #94a3b8;
-    font-size: 11px;
-    font-weight: 500;
-    margin-left: 4px;
 }
 
 /* Action buttons - Grid 2 columns */
@@ -1596,7 +1574,7 @@ textarea.form-control {
 .banner-content h3 {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
-    color: var(--color-port-gore);
+    color: #7BC043;
     margin-bottom: var(--spacing-xs);
 }
 

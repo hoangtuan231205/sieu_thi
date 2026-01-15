@@ -60,7 +60,7 @@ function initDropdownMenus() {
 
         if (!dropdownMenu) return;
 
-        // Function to calculate and update dropdown position
+        // Hàm tính toán và cập nhật vị trí dropdown
         function updateDropdownPosition() {
             const rect = item.getBoundingClientRect();
             const left = rect.left;
@@ -73,7 +73,7 @@ function initDropdownMenus() {
 
         // Thêm animation khi hover
         item.addEventListener('mouseenter', function () {
-            // Update position before showing
+            // Cập nhật vị trí trước khi hiển thị
             updateDropdownPosition();
 
             dropdownMenu.style.display = 'block';
@@ -98,7 +98,7 @@ function initDropdownMenus() {
             }, 300);
         });
 
-        // Update position on scroll and resize
+        // Cập nhật vị trí khi scroll và resize
         window.addEventListener('scroll', updateDropdownPosition, { passive: true });
         window.addEventListener('resize', updateDropdownPosition, { passive: true });
     });
@@ -177,7 +177,7 @@ function buyNow(productId, quantity = 1) {
     const baseUrl = document.querySelector('meta[name="base_url"]')?.content || '';
 
     // URL Construction Fix
-    let url = baseUrl + '/cart/buyNow'; // Safe bet: use exact method name
+    let url = baseUrl + '/cart/buyNow'; // An toàn: dùng đúng tên method
 
     // Remove /public if it's already in baseUrl to avoid double slash
     if (baseUrl.endsWith('/public')) {
@@ -217,7 +217,7 @@ function buyNow(productId, quantity = 1) {
         });
 }
 
-// Update addToCart similarly to ensure URL correctness
+// Cập nhật addToCart tương tự để đảm bảo URL chính xác
 function addToCart(productId, quantity = 1) {
     const csrfToken = document.querySelector('meta[name="csrf_token"]')?.content || '';
     let baseUrl = document.querySelector('meta[name="base_url"]')?.content || '';
@@ -289,7 +289,7 @@ function animateCartButton() {
 // =============================================================================
 
 function showNotification(message, type = 'success') {
-    // Check if container exists, if not create it
+    // Kiểm tra container có tồn tại không, nếu chưa thì tạo mới
     let container = document.getElementById('toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -320,7 +320,7 @@ function showNotification(message, type = 'success') {
 
     container.appendChild(toast);
 
-    // Auto remove after 3s
+    // Tự động xóa sau 3 giây
     setTimeout(() => {
         toast.style.animation = 'fadeOut 0.3s ease-in forwards';
         setTimeout(() => {
